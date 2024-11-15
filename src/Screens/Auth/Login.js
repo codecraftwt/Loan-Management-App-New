@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../../Redux/Slices/authslice';
 
 export default function LoginScreen({ navigation }) {
-  const [mobileNumber, setMobileNumber] = useState('7058730875');
-  const [password, setPassword] = useState('123456');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [mobileError, setMobileError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Get loading and error states from Redux store
+  const { isLoading, error } = useSelector((state) => state.auth || {});
+  const dispatch = useDispatch();
+
   const validateMobile = (text) => {
-    const numericText = text.replace(/[^0-9]/g, ''); 
+    const numericText = text.replace(/[^0-9]/g, '');
     if (numericText.length <= 10) {
       setMobileNumber(numericText);
       setMobileError(numericText.length < 10 ? 'Mobile number must be 10 digits.' : '');
@@ -28,9 +34,21 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = () => {
     if (isFormValid()) {
-      navigation.navigate('BottomNavigation'); 
+      // Dispatch login action
+      dispatch(login({ emailOrMobile: mobileNumber, password }))
+        .unwrap()
+        .then(() => {
+          // On success, navigate to BottomNavigation
+          navigation.navigate('BottomNavigation');
+          console.log(user, "Users Data")
+          console.log(token);
+        })
+        .catch(() => {
+          // Handle failed login attempt
+          alert('Invalid credentials or network error. Please try again.');
+        });
     } else {
-      alert('Please fill in all fields correctly.'); 
+      alert('Please fill in all fields correctly.');
     }
   };
 
@@ -39,12 +57,12 @@ export default function LoginScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <Text style={styles.welcomeText}>Welcome to LoanHub</Text>
       <Text style={styles.headerText}>Login to Continue</Text>
-      
+
       <View style={styles.inputContainer}>
-        <TextInput 
-          style={styles.input} 
-          placeholder="Mobile Number" 
-          keyboardType="phone-pad" 
+        <TextInput
+          style={styles.input}
+          placeholder="Mobile Number"
+          keyboardType="phone-pad"
           placeholderTextColor="#666666"
           value={mobileNumber}
           onChangeText={validateMobile}
@@ -52,43 +70,47 @@ export default function LoginScreen({ navigation }) {
         {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
 
         <View style={styles.passwordContainer}>
-          <TextInput 
-            style={styles.passwordInput} 
-            placeholder="Password" 
-            secureTextEntry={!passwordVisible} 
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            secureTextEntry={!passwordVisible}
             placeholderTextColor="#666666"
             value={password}
             onChangeText={validatePassword}
           />
           <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-            <Ionicons 
-              name={passwordVisible ? "eye-off-outline" : "eye-outline"} 
-              size={25} 
-              color={'#FFA36C'} 
+            <Ionicons
+              name={passwordVisible ? "eye-off-outline" : "eye-outline"}
+              size={25}
+              color={'#FFA36C'}
               style={styles.icon}
             />
           </TouchableOpacity>
         </View>
         {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
       </View>
-      
-      <TouchableOpacity 
-        style={[styles.loginButton, { opacity: isFormValid() ? 1 : 0.5 }]} 
+
+      <TouchableOpacity
+        style={[styles.loginButton, { opacity: isFormValid() ? 1 : 0.5 }]}
         onPress={handleLogin}
-        disabled={!isFormValid()} 
+        disabled={!isFormValid() || isLoading} // Disable button while logging in
       >
-        <Text style={styles.loginButtonText}>Login</Text>
+        <Text style={styles.loginButtonText}>
+          {isLoading ? 'Logging in...' : 'Login'}
+        </Text>
       </TouchableOpacity>
-      
+
+      {error && <Text style={styles.errorText}>{error}</Text>} {/* Display Redux error */}
+
       <View style={styles.linksContainer}>
-        <Text 
-          style={styles.link} 
+        <Text
+          style={styles.link}
           onPress={() => navigation.navigate('ForgotPassword')}
         >
           Forgot Password?
         </Text>
-        <Text 
-          style={styles.link} 
+        <Text
+          style={styles.link}
           onPress={() => navigation.navigate('Register')}
         >
           Create an Account
@@ -97,6 +119,7 @@ export default function LoginScreen({ navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -108,7 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#FF6B35',
     fontFamily: 'Montserrat-Bold',
-    textAlign:'center',
+    textAlign: 'center',
     marginBottom: 20,
   },
   headerText: {
@@ -185,12 +208,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
   },
-   errorText: {
+  errorText: {
     color: 'red',
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
     marginTop: -10,
     marginBottom: 10,
   },
-  
 });

@@ -1,10 +1,10 @@
-// import { combineReducers } from '@reduxjs/toolkit';
-// import jobReducer from '../Slices/Jobslice'
-// import authReducer from '../Slices/authslice'
+import { combineReducers } from 'redux';
+import authReducer from '../Slices/authslice';
+import loanReducer from '../Slices/loanSlice';
 
-// const rootReducer = combineReducers({
-//   jobs: jobReducer,
-//   auth:authReducer
-// });
+const rootReducer = combineReducers({
+    auth: authReducer,
+    loans: loanReducer
+});
 
-// export default rootReducer;
+export default rootReducer;

@@ -6,9 +6,9 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ScrollView, // Import ScrollView for scrolling effect
+  ScrollView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {
   applyLoan,
   calculateEmi,
@@ -22,16 +22,8 @@ export default function Home() {
 
   // Define the buttons array with images and screen names
   const buttons = [
-    {
-      title: 'Apply for Loan',
-      screen: 'LoanRequest',
-      image: loanStatus, // Ensure this image path is correct
-    },
-    {
-      title: 'Calculate EMI',
-      screen: 'LoanRequest',
-      image: loanStatus, // Ensure this image path is correct
-    },
+
+
     {
       title: 'Search Borrowers',
       screen: 'SearchLenders',
@@ -47,40 +39,56 @@ export default function Home() {
       screen: 'Inward',
       image: require('../../Assets/loan-status.jpg'), // Ensure this image path is correct
     },
+    {
+      title: 'Contractor Dashboard',
+      screen: 'ContractorDashboard',
+      image: require('../../Assets/loan-status.jpg'), // Ensure this image path is correct
+    },
   ];
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
+
       {/* Header Bar */}
       <View style={styles.headerBar}>
         <Text style={styles.headerText}>Home</Text>
       </View>
 
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* <Text style={styles.welcomeText}>Welcome to LoanHub</Text> */}
-        <Text style={styles.subtitle}>
-          Apply for a loan, track your loan status, and manage your profile.
-        </Text>
+      <ScrollView contentContainerStyle={styles.cardsContainer}>
 
-        {/* Scrollable Cards Container */}
-        <ScrollView contentContainerStyle={styles.cardsContainer}>
-          {/* Render Cards in Pairs */}
-          {buttons.map((button, index) => (
-            <View style={styles.cardWrapper} key={index}>
+        {/* Main Content */}
+        <View style={styles.content}>
+          <Text style={styles.welcomeText}>Welcome to our App</Text>
+          <Text style={styles.subtitle}>
+            Subscribe to give loans.
+          </Text>
+          <Text style={styles.subtitle}>
+            Need a loan? Just use our service!
+          </Text>
+
+          <TouchableOpacity
+            style={styles.subscribeButton}
+            onPress={() => navigation.navigate('SubscriptionScreen')}>
+            <Text style={styles.subscribeButtonText}>Subscribe</Text>
+          </TouchableOpacity>
+
+          {/* Render Cards */}
+          <View style={styles.cardsWrapper}>
+            {buttons.map((button, index) => (
               <TouchableOpacity
+                key={index}
                 style={styles.card}
                 onPress={() => navigation.navigate(button.screen)}>
                 <Image source={button.image} style={styles.cardImage} />
                 <Text style={styles.cardText}>{button.title}</Text>
               </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView >
+    </View >
   );
 }
 
@@ -94,7 +102,6 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 15,
     borderBottomEndRadius: 15,
     borderBottomStartRadius: 15,
   },
@@ -108,53 +115,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  subscribeButton: {
+    backgroundColor: '#FF6B35',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    width: '80%',
+    marginBlock: 20,
+  },
+  subscribeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
   },
   welcomeText: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#53258f',
     marginBottom: 10,
+    textAlign: 'center', // Ensure centered alignment
   },
   subtitle: {
     fontSize: 16,
     color: '#777',
-    marginBottom: 30,
     textAlign: 'center',
   },
   cardsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap', // Wrap the cards to create new rows
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingBottom: 20,
   },
-  cardWrapper: {
-    width: '50%', // Two cards per row
-    paddingHorizontal: 10,
-    marginBottom: 20, // Space between rows
+  cardsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    paddingBottom: 20,
   },
   card: {
-    backgroundColor: '#FF6B35',
+    // backgroundColor: '#FF6B35',
+    backgroundColor: '#faf2f5',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
-    height: 150, // Card height
-    elevation: 5, // Shadow for Android
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: {width: 0, height: 2},
+    height: 120,
+    width: 130,
+    marginBottom: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
+    marginHorizontal: 0, // Add spacing between cards
   },
   cardImage: {
-    width: 70, // Image size
+    width: 80,
     height: 70,
-    marginBottom: 10,
+    marginBottom: 5,
     resizeMode: 'contain',
   },
   cardText: {
-    color: '#fff',
+    // color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginTop: 5,
   },
 });

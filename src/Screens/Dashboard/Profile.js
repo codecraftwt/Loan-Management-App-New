@@ -1,4 +1,3 @@
-// Profile.js (Main Screen)
 import {
   StyleSheet,
   Text,
@@ -6,142 +5,122 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
-import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';  // Import navigation hook
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import PromptBox from '../PromptBox.js/Prompt';
+import { logout } from '../../Redux/Slices/authslice';
+
 
 export default function Profile() {
-  const [profileData, setProfileData] = useState(null);
-  const navigation = useNavigation();  
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  // Getting user data from Redux store
+  const user = useSelector(state => state.auth.user);
+
   const [isPromptVisible, setIsPromptVisible] = useState(false);
 
-  const fetchMostRecentProfileData = async () => {
-    try {
-      const response = await axios.get(
-        'https://6645f7a451e227f23aad333e.mockapi.io/api/users',
-      );
-
-      const sortedData = response.data.sort((a, b) => b.id - a.id);
-      const mostRecentUserId = sortedData[0].id; 
-
-      const profileResponse = await axios.get(
-        `https://6645f7a451e227f23aad333e.mockapi.io/api/users/${mostRecentUserId}`,
-      );
-
-      setProfileData(profileResponse.data);
-    } catch (error) {
-      console.error('Error fetching profile data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchMostRecentProfileData();
-  }, []);
-
-  // Function to navigate to the ProfileDetails screen
   const navigateToProfileDetails = () => {
-    navigation.navigate('ProfileDetails', { profileData });
+    navigation.navigate('ProfileDetails', { profileData: user });
   };
 
   const navigateToSettings = () => {
     navigation.navigate('Settings');
   };
 
-  const handleLogout =() => {
+  const handleLogout = () => {
     setIsPromptVisible(true);
-  }
+  };
 
-  const handleConfirmLogout = () =>{
-    setTimeout(() =>{
+  const handleConfirmLogout = () => {
+    dispatch(logout());
+    setTimeout(() => {
       setIsPromptVisible(false);
-      navigation.replace('Login')
-    }, 200)
+      navigation.replace('Login');
+    }, 200);
   };
 
   const handleCancelLogout = () => {
-    setTimeout(() =>{
-      setIsPromptVisible(false);
-      console.log("canceled logout")
-    },200);
-  };
+    setIsPromptVisible(false);
+    console.log("Canceled logout");
 
+  };
 
   return (
     <>
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerBar}>
-        <Text style={styles.headerText}>Profile</Text>
-      </View>
-
-      {/* Profile Information */}
-      <View style={styles.profileInfo}>
-        <Icon
-          name="user"
-          size={60}
-          color="#FF6B35"
-          style={styles.profileIcon}
-        />
-        {/* Displaying fetched profile name */}
-        <Text style={styles.profileName}>
-          {profileData ? profileData.name : 'Loading...'}
-        </Text>
-        {/* Displaying fetched profile email */}
-        <Text style={styles.profileEmail}>
-          {profileData ? profileData.email : 'Loading...'}
-        </Text>
-      </View>
-
-      {/* Settings Section */}
-      <View style={styles.profileContent}>
-        <View style={styles.optionsContainer}>
-          {/* Settings Option */}
-          <TouchableOpacity
-            style={styles.option}
-            onPress={navigateToSettings}  
-          >
-            <Icon name="settings" size={20} color="#333333" />
-            <Text style={styles.optionText}>Settings</Text>
-          </TouchableOpacity>
-
-          {/* Profile Option */}
-          <TouchableOpacity
-            style={styles.option}
-            onPress={navigateToProfileDetails}> 
-            <Icon name="user" size={20} color="#333333" />
-            <Text style={styles.optionText}>Personal Details</Text>
-          </TouchableOpacity>
-
-          {/* Loan History Option */}
-          <TouchableOpacity style={styles.option} onPress={() => {}}>
-            <Icon name="file-text" size={20} color="#333333" />
-            <Text style={styles.optionText}>Loan History</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.option} onPress={() => {}}>
-            <Icon name="help-circle" size={20} color="#333333" />
-            <Text style={styles.optionText}>Help & Support</Text>
-          </TouchableOpacity>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.headerBar}>
+          <Text style={styles.headerText}>Profile</Text>
         </View>
+
+        {/* Profile Information */}
+        <View style={styles.profileInfo}>
+          <Icon
+            name="user"
+            size={60}
+            color="#FF6B35"
+            style={styles.profileIcon}
+          />
+          {/* Displaying user data from Redux */}
+          <Text style={styles.profileName}>
+            {user ? user.userName : 'Loading...'}
+          </Text>
+          <Text style={styles.profileEmail}>
+            {user ? user.email : 'Loading...'}
+          </Text>
+        </View>
+
+        {/* Settings Section */}
+        <View style={styles.profileContent}>
+          <View style={styles.optionsContainer}>
+            {/* Settings Option */}
+            <TouchableOpacity
+              style={styles.option}
+              onPress={navigateToSettings}
+            >
+              <Icon name="settings" size={20} color="#333333" />
+              <Text style={styles.optionText}>Settings</Text>
+            </TouchableOpacity>
+
+            {/* Profile Option */}
+            <TouchableOpacity
+              style={styles.option}
+              onPress={navigateToProfileDetails}>
+              <Icon name="user" size={20} color="#333333" />
+              <Text style={styles.optionText}>Personal Details</Text>
+            </TouchableOpacity>
+
+            {/* Loan History Option */}
+            <TouchableOpacity style={styles.option} onPress={() => { }}>
+              <Icon name="file-text" size={20} color="#333333" />
+              <Text style={styles.optionText}>Loan History</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.option} onPress={() => { }}>
+              <Icon name="help-circle" size={20} color="#333333" />
+              <Text style={styles.optionText}>Help & Support</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
-
-    <PromptBox
-    visible={isPromptVisible}
-    message="Are you sure you want to logout?"
-    onConfirm={handleConfirmLogout}
-    onCancel={handleCancelLogout}
-    />
-    
+      {/* Logout Confirmation Prompt */}
+      <PromptBox
+        visible={isPromptVisible}
+        message="Are you sure you want to logout?"
+        onConfirm={handleConfirmLogout}
+        onCancel={handleCancelLogout}
+      />
     </>
   );
 }

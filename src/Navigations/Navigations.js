@@ -1,5 +1,5 @@
 import React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from '../Screens/Auth/Login';
 import SplashScreen from '../Screens/Auth/Splash';
 import Register from '../Screens/Auth/Register';
@@ -15,12 +15,13 @@ import LoanDetailScreen from '../Screens/Dashboard/LoanDetailsScreen';
 import ProfileDetails from '../Screens/Dashboard/ProfileDetails';
 import OldHistoryPage from '../Screens/Dashboard/OldHistoryPage';
 import SettingsScreen from '../Screens/Dashboard/SettingsScreen';
+import SubscriptionScreen from '../Screens/Subscription/SubscriptionScreen';
 
 
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Register" component={Register} />
@@ -39,7 +40,10 @@ const Navigation = () => {
       <Stack.Screen name="ProfileDetails" component={ProfileDetails} />
       <Stack.Screen name="OldHistoryPage" component={OldHistoryPage} />
 
-      <Stack.Screen name = "Settings" component={SettingsScreen} />
+
+      <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
+
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 };

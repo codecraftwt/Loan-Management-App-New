@@ -2,31 +2,30 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PromptBox from '../PromptBox.js/Prompt';
+import { logout } from '../../Redux/Slices/authslice';
 
 const ProfileDetails = ({ route, navigation }) => {
   const { profileData } = route.params;
 
-  const [isPromptVisible, setIsPromptVisible] = useState(false); 
+  const [isPromptVisible, setIsPromptVisible] = useState(false);
 
   const handleLogout = () => {
-    setIsPromptVisible(true); 
+    setIsPromptVisible(true);
   };
-  
+
   const handleConfirmLogout = () => {
+    dispatch(logout());
     setTimeout(() => {
-      setIsPromptVisible(false); 
-      navigation.replace('Login'); 
-      console.log('User logged out');
-    }, 200); 
+      setIsPromptVisible(false);
+      navigation.replace('Login');
+    }, 200);
   };
-  
+
   const handleCancelLogout = () => {
-    setTimeout(() => {
-      setIsPromptVisible(false); 
-      console.log('User canceled logout');
-    }, 200); 
+    setIsPromptVisible(false);
+    console.log("Canceled logout");
   };
-  
+
 
   return (
     <>
@@ -49,13 +48,13 @@ const ProfileDetails = ({ route, navigation }) => {
             color="#FF6B35"
             style={styles.profileIcon}
           />
-          <Text style={styles.detailTextName}>{profileData.name}</Text>
+          <Text style={styles.detailTextName}>{profileData?.userName}</Text>
         </View>
         <View style={styles.row}>
           <Icon name="user" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Name</Text>
-            <Text style={styles.detailText}>{profileData.name}</Text>
+            <Text style={styles.detailText}>{profileData?.userName}</Text>
           </View>
         </View>
 
@@ -64,7 +63,16 @@ const ProfileDetails = ({ route, navigation }) => {
           <Icon name="phone" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Phone</Text>
-            <Text style={styles.detailText}>{profileData.mobileNo}</Text>
+            <Text style={styles.detailText}>{profileData?.mobileNo}</Text>
+          </View>
+        </View>
+
+        <View style={styles.hrLine} />
+        <View style={styles.row}>
+          <Icon name="message-square" size={28} color="#FF6B35" style={styles.icon} />
+          <View style={styles.dataContainer}>
+            <Text style={styles.detailLabel}>Email</Text>
+            <Text style={styles.detailText}>{profileData?.email}</Text>
           </View>
         </View>
 
@@ -78,7 +86,7 @@ const ProfileDetails = ({ route, navigation }) => {
           />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Aadhar Card No</Text>
-            <Text style={styles.detailText}>{profileData.mobileNo}</Text>
+            <Text style={styles.detailText}>{profileData?.aadharCardNo}</Text>
           </View>
         </View>
 
@@ -132,6 +140,7 @@ const styles = StyleSheet.create({
   hrLine: {
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+    marginBottom: 10
   },
   profileInfo: {
     alignItems: 'center',
@@ -177,7 +186,7 @@ const styles = StyleSheet.create({
   detailTextName: {
     fontSize: 22,
     fontFamily: 'Poppins-Bold',
-    color: '#333333',
+    color: 'white',
   },
   detailLabel: {
     fontSize: 16,
@@ -189,6 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
     color: '#333333',
+    paddingBlock: 3
   },
   row: {
     flexDirection: 'row',
