@@ -20,6 +20,12 @@ export default function Profile() {
   // Getting user data from Redux store
   const user = useSelector(state => state.auth.user);
 
+  useEffect(() => {
+    if (!user) {
+      useFetchUserFromStorage();  // Fetch from storage if the user data is not in Redux
+    }
+  }, [user]);
+
   const [isPromptVisible, setIsPromptVisible] = useState(false);
 
   const navigateToProfileDetails = () => {
@@ -64,13 +70,15 @@ export default function Profile() {
             color="#FF6B35"
             style={styles.profileIcon}
           />
-          {/* Displaying user data from Redux */}
-          <Text style={styles.profileName}>
-            {user ? user.userName : 'Loading...'}
-          </Text>
-          <Text style={styles.profileEmail}>
-            {user ? user.email : 'Loading...'}
-          </Text>
+          {/* Displaying user data*/}
+          {user ? (
+            <>
+              <Text style={styles.profileName}>{user.userName}</Text>
+              <Text style={styles.profileEmail}>{user.email}</Text>
+            </>
+          ) : (
+            <ActivityIndicator size="small" color="#FF6B35" />
+          )}
         </View>
 
         {/* Settings Section */}

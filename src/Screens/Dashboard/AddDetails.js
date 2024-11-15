@@ -12,20 +12,27 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CountryPicker from 'react-native-country-picker-modal';
+import { useDispatch } from 'react-redux';
+import { createLoan } from '../../Redux/Slices/loanSlice';
 
 export default function AddDetails({ route, navigation }) {
-  const { updateFormData } = route.params;
+
+  const dispatch = useDispatch()
 
   const [fullName, setFullName] = useState('');
   const [contactNo, setContactNo] = useState('');
   const [aadharNo, setAadharNo] = useState('');
   const [address, setAddress] = useState('');
-  const [loanAmount, setLoanAmount] = useState('');
-  const [installments, setInstallments] = useState('');
+  const [amount, setAmount] = useState('');
+  const [loanStartDate, setLoanStartDate] = useState('');
+  const [loanEndDate, setLoanEndDate] = useState('');
+  const [purpose, setPurpose] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showOldHistoryButton, setShowOldHistoryButton] = useState(false);
   const [countryCode, setCountryCode] = useState('IN'); // default to India
   const [callingCode, setCallingCode] = useState('91'); // default calling code
+
+  const [apiErrors, setApiErrors] = useState([]);  // State to store API error messages
 
   const validateForm = () => {
     if (
@@ -33,14 +40,16 @@ export default function AddDetails({ route, navigation }) {
       !contactNo ||
       !aadharNo ||
       !address ||
-      !loanAmount ||
-      !installments
+      !amount ||
+      !loanStartDate ||
+      !loanEndDate ||
+      !purpose
     ) {
       setErrorMessage('All fields are required.');
       return false;
     }
-    if (isNaN(loanAmount) || parseFloat(loanAmount) <= 0) {
-      setErrorMessage('Loan amount should be a positive number.');
+    if (isNaN(amount) || parseFloat(amount) <= 0) {
+      setErrorMessage('Amount should be a positive number.');
       return false;
     }
     setErrorMessage('');
@@ -51,31 +60,35 @@ export default function AddDetails({ route, navigation }) {
     if (validateForm()) {
       const newData = {
         name: fullName,
-        contactNo,
-        aadharCardNo: aadharNo,
+        mobileNumber: contactNo,
+        aadhaarNumber: aadharNo,
         address,
-        loanBalance: parseFloat(loanAmount),
-        Installments: parseInt(installments),
+        amount: parseFloat(amount),
+        loanStartDate,
+        loanEndDate,
+        purpose,
       };
 
-      try {
-        const response = await fetch('https://6645f7a451e227f23aad333e.mockapi.io/api/data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newData),
-        });
+      console.log("Form data : ", newData);
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Data submitted successfully:', data);
-          updateFormData(newData);
+      try {
+        console.log("API call")
+        const response = await dispatch(createLoan(newData));
+
+        // Check if the dispatch was successful or failed
+        if (createLoan.fulfilled.match(response)) {
+          console.log("Loan created successfully");
           navigation.goBack();
         } else {
-          console.error('Failed to submit data:', response.status);
+          // If the action fails, store the error messages in state
+          console.error('Failed to create loan:', resultAction.payload);
+          if (resultAction.payload && resultAction.payload.errors) {
+            setApiErrors(resultAction.payload.errors);  // Set the errors from the API response
+          }
         }
-      } catch (error) {
+
+      }
+      catch (error) {
         console.error('Error submitting data:', error);
       }
     }
@@ -86,8 +99,10 @@ export default function AddDetails({ route, navigation }) {
     setContactNo('');
     setAadharNo('');
     setAddress('');
-    setLoanAmount('');
-    setInstallments('');
+    setAmount('');
+    setLoanStartDate('');
+    setLoanEndDate('');
+    setPurpose('');
     setErrorMessage('');
     setShowOldHistoryButton(false);
   };
@@ -100,24 +115,30 @@ export default function AddDetails({ route, navigation }) {
   };
 
   const handleContactNoChange = text => {
-    const mobilePattern = /^[0-9]*$/;
-    if (mobilePattern.test(text)) {
+    const mobilePattern = /^[0-9]{0,10}$/;
+    if (mobilePattern.test(text) && text.length <= 10) {
       setContactNo(text);
     }
   };
 
-  const handleLoanAmountChange = text => {
+
+  const handleAmountChange = text => {
     const amountPattern = /^[0-9]*\.?[0-9]*$/;
     if (amountPattern.test(text)) {
-      setLoanAmount(text);
+      setAmount(text);
     }
   };
 
-  const handleTotalInstallmentsChange = text => {
-    const amountPattern = /^[0-9]*\.?[0-9]*$/;
-    if (amountPattern.test(text)) {
-      setInstallments(text);
-    }
+  const handleLoanStartDateChange = text => {
+    setLoanStartDate(text);
+  };
+
+  const handleLoanEndDateChange = text => {
+    setLoanEndDate(text);
+  };
+
+  const handlePurposeChange = text => {
+    setPurpose(text);
   };
 
   const dismissKeyboard = () => {
@@ -130,6 +151,9 @@ export default function AddDetails({ route, navigation }) {
       setShowOldHistoryButton(text.length === 12);
     }
   };
+
+
+
 
   return (
     <KeyboardAvoidingView
@@ -144,7 +168,8 @@ export default function AddDetails({ route, navigation }) {
         </TouchableOpacity>
         <Text style={styles.headerText}>Add Details</Text>
       </View>
-      <View style={styles.scrollViewContainer}>
+      <ScrollView style={styles.scrollViewContainer}>
+        <Text style={styles.msgText}>Fill the below form to add loan</Text>
         <TextInput
           style={styles.input}
           placeholder="Full Name"
@@ -194,7 +219,7 @@ export default function AddDetails({ route, navigation }) {
         {showOldHistoryButton && (
           <TouchableOpacity
             style={styles.oldHistoryButton}
-            onPress={() => navigation.navigate('OldHistoryPage')}>
+            onPress={() => navigation.navigate('OldHistoryPage', { aadharNo })}>
             <Text style={styles.oldHistoryButtonText}>Old History</Text>
           </TouchableOpacity>
         )}
@@ -212,9 +237,9 @@ export default function AddDetails({ route, navigation }) {
         <View style={styles.loanAmountWrapper}>
           <TextInput
             style={styles.loanAmountInput}
-            placeholder="Loan Balance"
-            value={loanAmount}
-            onChangeText={handleLoanAmountChange}
+            placeholder="Amount"
+            value={amount}
+            onChangeText={handleAmountChange}
             onBlur={dismissKeyboard}
             keyboardType="numeric"
             returnKeyType="done"
@@ -222,18 +247,33 @@ export default function AddDetails({ route, navigation }) {
           <Text style={styles.rsText}>Rs</Text>
         </View>
 
-        <View style={styles.loanAmountWrapper}>
-          <TextInput
-            style={styles.loanAmountInput}
-            placeholder="Total Installments"
-            value={installments}
-            onChangeText={handleTotalInstallmentsChange}
-            onBlur={dismissKeyboard}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
-          <Text style={styles.rsText}></Text>
-        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Loan Start Date"
+          value={loanStartDate}
+          onChangeText={handleLoanStartDateChange}
+          onBlur={dismissKeyboard}
+          returnKeyType="next"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Loan End Date"
+          value={loanEndDate}
+          onChangeText={handleLoanEndDateChange}
+          onBlur={dismissKeyboard}
+          returnKeyType="next"
+        />
+
+        <TextInput
+          style={styles.textArea}
+          placeholder="Purpose"
+          value={purpose}
+          onChangeText={handlePurposeChange}
+          onBlur={dismissKeyboard}
+          multiline
+          textAlignVertical="top"
+        />
 
         {errorMessage ? (
           <Text style={styles.errorText}>{errorMessage}</Text>
@@ -250,7 +290,7 @@ export default function AddDetails({ route, navigation }) {
             <Text style={styles.resetButtonText}>Reset</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -278,28 +318,38 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
     flex: 1,
-    textAlign: 'center',
+    marginLeft: 20
+    // textAlign: 'center',
+  },
+  msgText: {
+    color: '#000000',
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    marginBottom: 20,
+    // textAlign: 'center',
   },
   scrollViewContainer: {
-    marginTop: 40,
-    justifyContent: 'center',
+    marginTop: 20,
+    // justifyContent: 'center',
     paddingHorizontal: 20,
   },
   input: {
-    height: 40,
+    height: 42,
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 12,
     paddingLeft: 10,
-    borderRadius: 5,
+    borderRadius: 10,
+    fontSize: 15
   },
   textArea: {
-    height: 100,
+    height: 90,
     borderColor: '#ccc',
     borderWidth: 1,
+    fontSize: 15,
     marginBottom: 10,
     paddingLeft: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     textAlignVertical: 'top',
   },
   loanAmountWrapper: {
@@ -308,14 +358,14 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     position: 'relative',
   },
   loanAmountInput: {
     flex: 1,
     height: 40,
     paddingLeft: 10,
-    fontSize: 16,
+    fontSize: 15,
   },
   rsText: {
     position: 'absolute',
@@ -331,7 +381,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   resetButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#fc9960',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -372,28 +422,28 @@ const styles = StyleSheet.create({
   phoneInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
     borderColor: '#ccc',
     paddingVertical: 5,
-    marginTop: 10,
-    position: 'relative', 
+    marginBottom: 10,
+    position: 'relative',
+    borderRadius: '10'
   },
 
   inputCode: {
     flex: 1,
-    height: 40,
+    height: 42,
     borderColor: '#ccc',
     borderWidth: 1,
-    paddingLeft: 35, 
+    paddingLeft: 48,
     paddingRight: 10,
-    borderRadius: 5,
-    fontSize: 16,
+    borderRadius: 10,
+    fontSize: 15,
   },
 
   countryPickerContainer: {
     position: 'absolute',
-    left: 10, 
+    left: 10,
     zIndex: 1,
-    top: 8, 
+    top: 8,
   },
 });

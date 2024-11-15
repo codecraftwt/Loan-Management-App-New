@@ -1,30 +1,30 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useDispatch, useSelector } from 'react-redux';
 import { getLoanByAadhar } from '../../Redux/Slices/loanSlice';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Inward({ navigation }) {
   const user = useSelector(state => state.auth.user);
   const aadhaarNumber = user?.aadharCardNo;
 
+  // console.log("Users data -->", user)
+
+  // console.log("Aadhar card number -->", aadhaarNumber)
+
   const dispatch = useDispatch();
   const { loans, totalAmount, loading, error } = useSelector((state) => state.loans);
 
-  // Fetch loans when component mounts
-  useEffect(() => {
-    const fetchLoansData = async () => {
-      try {
-        if (aadhaarNumber) {
-          await dispatch(getLoanByAadhar(aadhaarNumber));
-        }
-      } catch (err) {
-        console.error('Error fetching loans:', err);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Your API call here
+      if (aadhaarNumber) {
+        dispatch(getLoanByAadhar(aadhaarNumber));
+        console.log("API Call Triggered on Screen Focus");
       }
-    };
-
-    fetchLoansData();
-  }, [dispatch, aadhaarNumber]);
+    }, [dispatch, aadhaarNumber])
+  );
 
   return (
     <View style={styles.container}>
@@ -39,7 +39,9 @@ export default function Inward({ navigation }) {
 
       {/* List of loans */}
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
       ) : (
         <ScrollView style={styles.nameListContainer}>
           {loans.length === 0 ? (

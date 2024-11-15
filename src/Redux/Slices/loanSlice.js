@@ -5,35 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const initialState = {
     loans: [],
     totalAmount: 0,
+    lenderLoans: [], // New state for lender-specific loans
+    myLoans: [],
+    lenderTotalAmount: 0, // New state for lender-specific total amount
     loading: false,
     error: null,
 };
 
-// Thunk for fetching loan details by ID with the token
-export const fetchLoans = createAsyncThunk(
-    'loans/fetchLoans',
-    async (_, { rejectWithValue }) => {
-        try {
-            const token = await AsyncStorage.getItem('token');
-
-            if (!token) {
-                return rejectWithValue('User is not authenticated');
-            }
-
-            const response = await instance.get('loan/get-loan', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-//thunk for fetching loan details by Aadhar
+// Thunk for fetching loan details by Aadhar
 export const getLoanByAadhar = createAsyncThunk(
     'loans/getLoanByAadhar',
     async (aadhaarNumber, { rejectWithValue }) => {
@@ -43,14 +22,12 @@ export const getLoanByAadhar = createAsyncThunk(
             });
 
             if (response.status === 404 && response.data.message) {
-
                 return rejectWithValue(response.data.message);
             }
             return {
-                loans: response.data.data,       // loan data array
-                totalAmount: response.data.totalAmount,  // total loan amount
+                loans: response.data.data,
+                totalAmount: response.data.totalAmount,
             };
-
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -68,9 +45,11 @@ export const getLoanByLender = createAsyncThunk(
                 return rejectWithValue('User is not authenticated');
             }
 
+            // Force a fresh fetch with no caching (or consider adding cache-control headers)
             const response = await instance.get('loan/get-loan-by-lender', {
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    'Cache-Control': 'no-cache',  // Avoid caching old data
                 },
             });
 
@@ -79,8 +58,8 @@ export const getLoanByLender = createAsyncThunk(
             }
 
             return {
-                loans: response.data.data,
-                totalAmount: response.data.totalAmount,
+                lenderLoans: response.data.data,
+                lenderTotalAmount: response.data.totalAmount,
             };
         } catch (error) {
             return rejectWithValue(error.message);
@@ -93,10 +72,30 @@ export const createLoan = createAsyncThunk(
     'loans/createLoan',
     async (loanData, { rejectWithValue }) => {
         try {
-            const response = await instance.post('loan/create-loan', loanData);
+            const token = await AsyncStorage.getItem('token');
+
+            if (!token) {
+                return rejectWithValue('User is not authenticated');
+            }
+
+            const response = await instance.post(
+                'loan/add-loan',
+                loanData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            if (error.response) {
+                console.error('API Error:', error.response.data);  // Log the detailed error
+                return rejectWithValue(error.response.data);  // Return the API error to the component
+            }
+            console.error('Error:', error.message);  // Log non-API errors
+            return rejectWithValue(error.message);  // Return the error message
         }
     }
 );
@@ -120,26 +119,17 @@ const loanSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // Handling fetchLoans
-            .addCase(fetchLoans.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchLoans.fulfilled, (state, action) => {
-                state.loading = false;
-                state.loans = action.payload;
-            })
-            .addCase(fetchLoans.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload || action.error.message;
-            })
             // Handling getLoanByAadhar
             .addCase(getLoanByAadhar.pending, (state) => {
                 state.loading = true;
+                // Clear previous data to avoid mixing stale data
+                state.loans = [];
+                state.totalAmount = 0;
             })
             .addCase(getLoanByAadhar.fulfilled, (state, action) => {
                 state.loading = false;
-                state.loans = action.payload.loans; // Set loan data
-                state.totalAmount = action.payload.totalAmount; // Set totalAmount
+                state.loans = action.payload.loans;
+                state.totalAmount = action.payload.totalAmount;
             })
             .addCase(getLoanByAadhar.rejected, (state, action) => {
                 state.loading = false;
@@ -149,11 +139,14 @@ const loanSlice = createSlice({
             // Handling getLoanByLender
             .addCase(getLoanByLender.pending, (state) => {
                 state.loading = true;
+                // Clear previous data to avoid mixing stale data
+                state.lenderLoans = [];
+                state.lenderTotalAmount = 0;
             })
             .addCase(getLoanByLender.fulfilled, (state, action) => {
                 state.loading = false;
-                state.loans = action.payload.loans; // Set loan data
-                state.totalAmount = action.payload.totalAmount; // Set totalAmount
+                state.lenderLoans = action.payload.lenderLoans;
+                state.lenderTotalAmount = action.payload.lenderTotalAmount;
             })
             .addCase(getLoanByLender.rejected, (state, action) => {
                 state.loading = false;
@@ -166,12 +159,13 @@ const loanSlice = createSlice({
             })
             .addCase(createLoan.fulfilled, (state, action) => {
                 state.loading = false;
-                state.loans.push(action.payload);
+                state.lenderLoans.push(action.payload);
             })
             .addCase(createLoan.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || action.error.message;
             })
+
             // Handling updateLoanStatus
             .addCase(updateLoanStatus.pending, (state) => {
                 state.loading = true;

@@ -1,20 +1,45 @@
-import React, {useState} from 'react'; // Add useState here
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import { useDispatch, useSelector } from 'react-redux';
+import { getLoanByAadhar } from '../../Redux/Slices/loanSlice';
 
-const OldHistoryPage = ({navigation}) => {
+const OldHistoryPage = ({ route, navigation }) => {
+  const { aadharNo } = route.params; // Retrieve Aadhar number from navigation params
+
   const [expandedContractor, setExpandedContractor] = useState(null); // To track which contractor's details are expanded
 
-  const toggleDetails = index => {
+  const dispatch = useDispatch();
+
+  // Get loan details from Redux store
+  const { loans, totalAmount, loading, error } = useSelector(state => state.loans);
+
+  useEffect(() => {
+    if (aadharNo) {
+      // Dispatch action to fetch loans by Aadhar number when component mounts
+      dispatch(getLoanByAadhar(aadharNo));
+    }
+  }, [aadharNo, dispatch]);
+
+  const toggleDetails = (index) => {
     setExpandedContractor(expandedContractor === index ? null : index); // Toggle details for the clicked contractor
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
 
   return (
     <>
       <View style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}>
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Old History Details</Text>
@@ -28,85 +53,34 @@ const OldHistoryPage = ({navigation}) => {
             style={styles.profileIcon}
           />
           <Text style={styles.detailTextName}>Rony leo</Text>
-          <Text style={styles.aadharHeading}>Aadhar No 123456789090</Text>
+          <Text style={styles.aadharHeading}>Aadhar No: {aadharNo}</Text>
         </View>
 
-        <View style={styles.row}>
-          <Icon name="user" size={28} color="#FF6B35" style={styles.icon} />
-          <View style={styles.dataContainer}>
-            <Text style={styles.detailLabel}>Full Name</Text>
-            <Text style={styles.detailText}>Rony leo</Text>
-          </View>
-        </View>
-        <View style={styles.hrLine} />
 
-        <View style={styles.row}>
-          <Icon name="phone" size={28} color="#FF6B35" style={styles.icon} />
-          <View style={styles.dataContainer}>
-            <Text style={styles.detailLabel}>Contact No</Text>
-            <Text style={styles.detailText}>123456789</Text>
-          </View>
-        </View>
-        <View style={styles.hrLine} />
+        <>
+          <Text style={styles.totalAmountText}>Total Loan Amount: {totalAmount} Rs</Text>
 
-        <View style={styles.row}>
-          <Icon name="map-pin" size={28} color="#FF6B35" style={styles.icon} />
-          <View style={styles.dataContainer}>
-            <Text style={styles.detailLabel}>Address</Text>
-            <Text style={styles.detailText}>
-              Building Number : 64 Street Address
-              : 88,
-              {/* Post Code : 226698 */}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.hrLine} />
+          {/* Render Loan details */}
+          {loans && loans.map((loan, index) => (
+            <View key={index} style={styles.detailsItem}>
+              <TouchableOpacity
+                onPress={() => toggleDetails(index)}
+                style={styles.contractorNameContainer}
+              >
+                <Text style={styles.contractorName}>Contractor Name: {loan.contractorName}</Text>
+              </TouchableOpacity>
 
-        <View style={styles.row}>
-            <Icon
-              name="credit-card"
-              size={28}
-              color="#FF6B35"
-              style={styles.icon}
-            />
-            <View style={styles.dataContainer}>
-              <Text style={styles.detailLabel}>Loan Balance</Text>
-              <Text style={styles.detailText}>6000 Rs</Text>
+              {expandedContractor === index && (
+                <View style={styles.detailsContainer}>
+                  <Text style={styles.detailText}>Taken Loan: {loan.amount} Rs</Text>
+                  <Text style={styles.detailText}>Pending Amount: {loan.pendingAmount} Rs</Text>
+                  <Text style={styles.detailText}>Date: {loan.date}</Text>
+                </View>
+              )}
             </View>
-          </View>
-          <View style={styles.separator} />
-        <View style={styles.hrLine} />
+          ))}
+        </>
 
-        <View style={styles.detailsItem}>
-          {/* Contractor 1 */}
-          <TouchableOpacity
-            onPress={() => toggleDetails(1)}
-            style={styles.contractorNameContainer}>
-            <Text style={styles.contractorName}>Contractor Name: Jack</Text>
-          </TouchableOpacity>
-          {expandedContractor === 1 && (
-            <View style={styles.detailsContainer}>
-              <Text style={styles.detailText}>Taken Loan: 2000 Rs</Text>
-              <Text style={styles.detailText}>Pending Amount: 2000 Rs</Text>
-              <Text style={styles.detailText}>Date: 1 Nov 2024</Text>
-            </View>
-          )}
-
-          {/* Contractor 2 */}
-          <TouchableOpacity
-            onPress={() => toggleDetails(2)}
-            style={styles.contractorNameContainer}>
-            <Text style={styles.contractorName}>Contractor Name: John</Text>
-          </TouchableOpacity>
-          {expandedContractor === 2 && (
-            <View style={styles.detailsContainer}>
-              <Text style={styles.detailText}>Taken Loan: 4000 Rs</Text>
-              <Text style={styles.detailText}>Pending Amount: 3000 Rs</Text>
-              <Text style={styles.detailText}>Date: 5 Nov 2024</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.hrLine} />
       </View>
     </>
   );
@@ -122,7 +96,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
-    // marginBottom: 5,
     marginTop: 14,
   },
   contractorName: {
@@ -130,29 +103,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
-  hrLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
-  profileInfo: {
-    alignItems: 'center',
-    marginVertical: 20,
-    backgroundColor: '#FF6B35',
-    paddingVertical: 20,
-    paddingHorizontal: 25,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    marginHorizontal: 16,
+  totalAmountText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+    marginVertical: 10,
   },
-  profileIcon: {
-    backgroundColor: '#FFA36C',
-    padding: 15,
-    borderRadius: 40,
+  detailsItem: {
+    marginBottom: 15,
+    marginLeft: 18,
+  },
+  detailsContainer: {
+    paddingLeft: 20,
+    backgroundColor: '#fafafa',
+    borderRadius: 8,
     marginBottom: 10,
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#555',
+    paddingVertical: 4,
   },
   headerBar: {
     backgroundColor: '#FF6B35',
@@ -175,64 +151,30 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
   },
-  detailTitle: {
-    fontSize: 20,
-    fontFamily: 'Poppins-Bold',
-    color: '#333333',
-    marginBottom: 15,
+  profileInfo: {
+    alignItems: 'center',
+    marginVertical: 20,
+    backgroundColor: '#FF6B35',
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    marginHorizontal: 16,
   },
-  detailTextName: {
-    fontSize: 22,
-    fontFamily: 'Poppins-Bold',
-    color: '#333333',
-  },
-  detailsItem: {
-    marginBottom: 15,
-    marginLeft: 18,
-  },
-  detailLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    fontFamily: 'Poppins-Regular',
-    color: 'black',
-  },
-  detailsContainer: {
-    paddingLeft: 20,
-    backgroundColor: '#fafafa',
-    borderRadius: 8,
+  profileIcon: {
+    backgroundColor: '#FFA36C',
+    padding: 15,
+    borderRadius: 40,
     marginBottom: 10,
   },
-  detailText: {
-    fontSize: 14,
-    color: '#555',
-    paddingVertical: 4,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  icon: {
-    marginRight: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Bold',
-    color: '#333',
-    marginRight: 5,
-  },
-  value: {
-    fontSize: 14,
-    fontFamily: 'Poppins-Regular',
-    color: '#555',
-    // marginLeft: 20,
-  },
-  dataContainer: {
-    marginLeft: 10,
-  },
   aadharHeading: {
-    fontSize: 18
-  }
+    fontSize: 18,
+    color: '#FFF',
+  },
 });
 
 export default OldHistoryPage;

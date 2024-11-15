@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../Redux/Slices/authslice';
+import Toast from 'react-native-toast-message';
 
 export default function LoginScreen({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState('');
@@ -34,23 +35,36 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = () => {
     if (isFormValid()) {
-      // Dispatch login action
+      // Dispatch login action and handle response states
       dispatch(login({ emailOrMobile: mobileNumber, password }))
-        .unwrap()
-        .then(() => {
-          // On success, navigate to BottomNavigation
+        .unwrap() // Automatically resolves on success or throws on failure
+        .then((response) => {
+          // On success, show a success toast and navigate to BottomNavigation
+          Toast.show({
+            type: 'success',
+            position: 'top',
+            text1: 'Login Successful',
+          });
           navigation.navigate('BottomNavigation');
-          console.log(user, "Users Data")
-          console.log(token);
         })
-        .catch(() => {
-          // Handle failed login attempt
-          alert('Invalid credentials or network error. Please try again.');
+        .catch((error) => {
+          // Log the error for debugging (useful during development)
+          console.error("Error ->", error);
+
+          // Show an error toast based on the structure of the error
+          const errorMessage = error || 'Invalid credentials or network error. Please try again.';
+
+          Toast.show({
+            type: 'error',
+            position: 'top',
+            text1: errorMessage,
+          });
         });
     } else {
       alert('Please fill in all fields correctly.');
     }
   };
+
 
   return (
     <View style={styles.container}>
@@ -67,7 +81,7 @@ export default function LoginScreen({ navigation }) {
           value={mobileNumber}
           onChangeText={validateMobile}
         />
-        {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
+        {mobileError ? <Text style={styles.mobileErrorText}>{mobileError}</Text> : null}
 
         <View style={styles.passwordContainer}>
           <TextInput
@@ -80,7 +94,7 @@ export default function LoginScreen({ navigation }) {
           />
           <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
             <Ionicons
-              name={passwordVisible ? "eye-off-outline" : "eye-outline"}
+              name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
               size={25}
               color={'#FFA36C'}
               style={styles.icon}
@@ -100,9 +114,16 @@ export default function LoginScreen({ navigation }) {
         </Text>
       </TouchableOpacity>
 
-      {error && <Text style={styles.errorText}>{error}</Text>} {/* Display Redux error */}
-
       <View style={styles.linksContainer}>
+        {/* Sign in with Google Button */}
+        <TouchableOpacity style={styles.googleButton} onPress={() => showmsg()}>
+          <Image
+            source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw7JaI54p1i3v3WAoqEiQE1Jduquut71TkNSKSTNoixuv9DQQGdj61Ex_10nv6NM5wIhY&usqp=CAU' }}
+            style={styles.googleIcon}
+          />
+          <Text style={styles.googleButtonText}>Sign in with Google</Text>
+        </TouchableOpacity>
+
         <Text
           style={styles.link}
           onPress={() => navigation.navigate('ForgotPassword')}
@@ -142,7 +163,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   inputContainer: {
-    marginBottom: 30,
+    marginBottom: 10,
   },
   input: {
     height: 60,
@@ -166,7 +187,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFA36C',
     borderWidth: 1,
     borderRadius: 8,
-    height: 60,
+    height: 55,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -186,7 +207,7 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: '#FF6B35',
     borderRadius: 8,
-    height: 50,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
@@ -208,11 +229,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
   },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#999999',
+    borderWidth: 1,
+    borderRadius: 8,
+    height: 55,
+    justifyContent: 'center',
+    marginTop: 5,
+    paddingHorizontal: 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginBottom: 20,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 20,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+  },
   errorText: {
     color: 'red',
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
-    marginTop: -10,
     marginBottom: 10,
+    marginTop: 5
   },
+  mobileErrorText: {
+    color: 'red',
+    marginTop: -20,
+    paddingBlock: 5,
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
+  }
 });

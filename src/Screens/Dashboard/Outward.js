@@ -1,28 +1,29 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useDispatch, useSelector } from 'react-redux';
+import { getLoanByLender } from '../../Redux/Slices/loanSlice'; // Adjust path as needed
+import moment from 'moment'; // You can use moment to format dates
 
 export default function Outward({ navigation }) {
-  const [formData, setFormData] = useState([]);
+  const dispatch = useDispatch();
+  const [searchQuery, setSearchQuery] = useState(''); // State to handle search input
+  const { lenderLoans, loading, error } = useSelector(state => state.loans);
 
-  // Fetch data from the mock API
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://6645f7a451e227f23aad333e.mockapi.io/api/data');
-        const data = await response.json();
-        setFormData(data);  // Set the fetched data into formData state
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    // Dispatching the action to fetch loans by lender when the component mounts
+    dispatch(getLoanByLender());
+  }, [dispatch]);
 
-    fetchData();
-  }, []);  // The empty dependency array ensures this runs once when the component mounts
+  // If data is still loading or if there's an error
+  if (loading) {
+    return <Text style={styles.emptyText}>Loading...</Text>;
+  }
 
-  const handleFormDataUpdate = newData => {
-    setFormData(prevData => [...prevData, newData]);
-  };
+  // Filter the loans based on the search query
+  const filteredLoans = lenderLoans?.filter(loan =>
+    loan.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -30,11 +31,21 @@ export default function Outward({ navigation }) {
         <Text style={styles.headerText}>My Given Loans</Text>
       </View>
 
+      {/* Search Bar */}
+      <View style={styles.searchBarContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by Name..."
+          value={searchQuery}
+          onChangeText={setSearchQuery} // Update search query on input change
+        />
+      </View>
+
       <TouchableOpacity
         style={styles.plusButton}
         onPress={() =>
           navigation.navigate('AddDetails', {
-            updateFormData: handleFormDataUpdate,  // Passing the update function to AddDetails screen
+            // You can adjust based on how you want to pass data
           })
         }
       >
@@ -42,34 +53,45 @@ export default function Outward({ navigation }) {
       </TouchableOpacity>
 
       <ScrollView style={styles.nameListContainer}>
-        {formData.length === 0 ? (
-          <Text style={styles.emptyText}>No given loans</Text>
+        {filteredLoans?.length === 0 ? (
+          <Text style={styles.emptyText}>No loans found</Text>
         ) : (
-          formData.map((data, index) => (
+          filteredLoans?.map((loan, index) => (
             <TouchableOpacity
               key={index}
               onPress={() =>
-                navigation.navigate('LoanDetailScreen', { loanDetails: data })
+                navigation.navigate('LoanDetailScreen', { loanDetails: loan })
               }
             >
               <View style={styles.dataCard}>
                 <View style={styles.dataContainer}>
-                  <View>
-                    <Icon
-                      name="user"
-                      size={30}
-                      color="#FF6B35"
-                      style={styles.userIcon}
-                    />
-                  </View>
+                  <Icon
+                    name="user"
+                    size={30}
+                    color="#FF6B35"
+                    style={styles.userIcon}
+                  />
                   <View style={styles.textContainer}>
                     <Text style={styles.dataLabel}>
-                      Full Name:{' '}
-                      <Text style={styles.dataText}>{data.name}</Text>
+                      Full Name: <Text style={styles.dataText}>{loan.name}</Text>
                     </Text>
                     <Text style={styles.dataLabel}>
-                      Loan Balance:{' '}
-                      <Text style={styles.dataText}>{data.loanBalance}</Text> Rs
+                      Loan Amount: <Text style={styles.dataText}>{loan.amount} Rs</Text>
+                    </Text>
+                    <Text style={styles.dataLabel}>
+                      Purpose: <Text style={styles.dataText}>{loan.purpose}</Text>
+                    </Text>
+                    <Text style={styles.dataLabel}>
+                      Status: <Text style={styles.dataText}>{loan.status}</Text>
+                    </Text>
+                    <Text style={styles.dataLabel}>
+                      Loan Start Date: <Text style={styles.dataText}>{moment(loan.loanStartDate).format('LL')}</Text>
+                    </Text>
+                    <Text style={styles.dataLabel}>
+                      Loan End Date: <Text style={styles.dataText}>{moment(loan.loanEndDate).format('LL')}</Text>
+                    </Text>
+                    <Text style={styles.dataLabel}>
+                      Aadhaar Number: <Text style={styles.dataText}>{loan.aadhaarNumber}</Text>
                     </Text>
                   </View>
                 </View>
@@ -88,8 +110,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   textContainer: {
-    flexDirection: 'column', 
-    marginTop: 10, 
+    flexDirection: 'column',
+    marginTop: 10,
   },
   headerBar: {
     backgroundColor: '#FF6B35',
@@ -109,16 +131,16 @@ const styles = StyleSheet.create({
   },
   plusButton: {
     position: 'absolute',
-    top: 75, 
-    right: 15,
+    top: 85,
+    right: 25,
     backgroundColor: '#fff',
     borderRadius: 20,
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 4,
@@ -129,7 +151,7 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
   },
   nameListContainer: {
-    marginTop: 70, 
+    marginBlock: 10,
     paddingHorizontal: 15,
   },
   emptyText: {
@@ -147,15 +169,9 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   dataContainer: {
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 6
-  },
-
-  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 0,
+    marginBottom: 6,
   },
   userIcon: {
     marginRight: 10,
@@ -171,5 +187,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     marginBottom: 0,
-  }
+  },
+  searchBarContainer: {
+    paddingHorizontal: 15,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    fontSize: 16,
+  },
 });

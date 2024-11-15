@@ -3,21 +3,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../../Utils/AxiosInstance';
 
 // Thunk for user login
-export const login = createAsyncThunk('auth/signin', async ({ emailOrMobile, password }) => {
+export const login = createAsyncThunk('auth/signin', async ({ emailOrMobile, password }, { rejectWithValue }) => {
     try {
         const response = await instance.post('auth/signin', { emailOrMobile, password });
 
+        // Destructure user data and token from the response
         const { token, _id, email, userName, mobileNo, address, aadharCardNo } = response.data;
 
-        // Save token and user info in AsyncStorage for persistence
-        await AsyncStorage.setItem('token', token);
-        await AsyncStorage.setItem('user', JSON.stringify({
-            _id, email, userName, mobileNo, address, aadharCardNo
-        }));
-        return { token, _id, email, userName, mobileNo, address, aadharCardNo };
+        // If token and user info are present, save to AsyncStorage
+        if (token && _id) {
+            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem('user', JSON.stringify({ _id, email, userName, mobileNo, address, aadharCardNo }));
+            return { token, _id, email, userName, mobileNo, address, aadharCardNo };
+        } else {
+            return rejectWithValue('Invalid credentials');  // Handle invalid response data
+        }
     } catch (error) {
-        console.error('Login error:', error);
-        throw error;
+        // If there is a network issue or other API issues, capture the error and pass it to rejectWithValue
+        console.error('Login error:', error.response.data.message);
+        if (error.response || error.response.data || error.response.data.message) {
+            return rejectWithValue(error.response.data.message);
+        } else {
+            return rejectWithValue('Network error, please try again later.');  // Fallback error message
+        }
     }
 });
 
@@ -70,8 +78,7 @@ const authSlice = createSlice({
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = 'Check your connection or try again later.';
-                console.error(action.error.message);
+                state.error = action.payload || 'Check your connection or try again later.';
             })
 
         // Register reducers
