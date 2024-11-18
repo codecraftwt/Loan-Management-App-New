@@ -40,11 +40,11 @@ export default function LoginScreen({ navigation }) {
         .unwrap() // Automatically resolves on success or throws on failure
         .then((response) => {
           // On success, show a success toast and navigate to BottomNavigation
-          Toast.show({
-            type: 'success',
-            position: 'top',
-            text1: 'Login Successful',
-          });
+          // Toast.show({
+          //   type: 'success',
+          //   position: 'top',
+          //   text1: 'Login Successful',
+          // });
           navigation.navigate('BottomNavigation');
         })
         .catch((error) => {
@@ -52,7 +52,7 @@ export default function LoginScreen({ navigation }) {
           console.error("Error ->", error);
 
           // Show an error toast based on the structure of the error
-          const errorMessage = error || 'Invalid credentials or network error. Please try again.';
+          const errorMessage = error || error.message || 'Invalid credentials or network error. Please try again.';
 
           Toast.show({
             type: 'error',

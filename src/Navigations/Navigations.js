@@ -16,6 +16,7 @@ import ProfileDetails from '../Screens/Dashboard/ProfileDetails';
 import OldHistoryPage from '../Screens/Dashboard/OldHistoryPage';
 import SettingsScreen from '../Screens/Dashboard/SettingsScreen';
 import SubscriptionScreen from '../Screens/Subscription/SubscriptionScreen';
+import HelpAndSupportScreen from '../Screens/Auth/HelpAndSupportScreen';
 
 
 const Navigation = () => {
@@ -42,6 +43,7 @@ const Navigation = () => {
 
 
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
+      <Stack.Screen name="HelpAndSupportScreen" component={HelpAndSupportScreen} />
 
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>

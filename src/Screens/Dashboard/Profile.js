@@ -4,6 +4,8 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
@@ -11,6 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import PromptBox from '../PromptBox.js/Prompt';
 import { logout } from '../../Redux/Slices/authslice';
+import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
+import { logo } from '../../Assets';
 
 
 export default function Profile() {
@@ -20,11 +24,10 @@ export default function Profile() {
   // Getting user data from Redux store
   const user = useSelector(state => state.auth.user);
 
-  useEffect(() => {
-    if (!user) {
-      useFetchUserFromStorage();  // Fetch from storage if the user data is not in Redux
-    }
-  }, [user]);
+  useFetchUserFromStorage();
+
+  const aadhaarNumber = user?.aadhaarNumber || user?.aadharCardNo;
+
 
   const [isPromptVisible, setIsPromptVisible] = useState(false);
 
@@ -50,8 +53,7 @@ export default function Profile() {
 
   const handleCancelLogout = () => {
     setIsPromptVisible(false);
-    console.log("Canceled logout");
-
+    console.log('Canceled logout');
   };
 
   return (
@@ -60,6 +62,7 @@ export default function Profile() {
         {/* Header */}
         <View style={styles.headerBar}>
           <Text style={styles.headerText}>Profile</Text>
+          <Image source={logo} style={styles.logo} />
         </View>
 
         {/* Profile Information */}
@@ -102,12 +105,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             {/* Loan History Option */}
-            <TouchableOpacity style={styles.option} onPress={() => { }}>
+            <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('OldHistoryPage', { aadhaarNumber }); }} >
               <Icon name="file-text" size={20} color="#333333" />
               <Text style={styles.optionText}>Loan History</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.option} onPress={() => { }}>
+            <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('HelpAndSupportScreen'); }}>
               <Icon name="help-circle" size={20} color="#333333" />
               <Text style={styles.optionText}>Help & Support</Text>
             </TouchableOpacity>
@@ -136,21 +139,36 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    // backgroundColor: '#FFF',
+    backgroundColor: '#f5f5f5',
   },
   headerBar: {
     backgroundColor: '#FF6B35',
-    height: 60,
+    height: 70,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 15,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
+    paddingTop: 10,
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
+    elevation: 5,
+    position: 'relative',
   },
   headerText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
+    letterSpacing: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 40,
+    position: 'absolute',
+    right: 0,
+    top: 15,
   },
   profileContent: {
     flexGrow: 1,

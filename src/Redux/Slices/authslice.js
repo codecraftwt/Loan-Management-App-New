@@ -30,17 +30,49 @@ export const login = createAsyncThunk('auth/signin', async ({ emailOrMobile, pas
 });
 
 // Thunk for user registration
-// export const registerUser = createAsyncThunk(
-//     'auth/signup',
-//     async (userData, { rejectWithValue }) => {
-//         try {
-//             const response = await instance.post('auth/signup', userData);
-//             return response.data;
-//         } catch (error) {
-//             return rejectWithValue(error.response.data);
-//         }
-//     }
-// );
+export const registerUser = createAsyncThunk(
+    'auth/signup',
+    async (userData, { rejectWithValue }) => {
+        try {
+            const response = await instance.post('auth/signup', userData);
+            console.log(response.data, "Success")
+            return response.data;
+        } catch (error) {
+            console.log(error, "error")
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const updateUser = createAsyncThunk(
+    'user/update-profile',
+    async (userData, { rejectWithValue }) => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+                return rejectWithValue('User is not authenticated');
+            }
+
+            const response = await instance.patch('user/update-profile',
+                {
+                    userData
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Cache-Control': 'no-cache',
+                    }
+                }
+
+            );
+            console.log(response.data, "Success")
+            return response.data;
+        } catch (error) {
+            console.log(error, "error")
+            return rejectWithValue(error.response ? error.response.data : error.message);
+        }
+    }
+);
 
 // Authentication slice
 const authSlice = createSlice({
@@ -58,6 +90,11 @@ const authSlice = createSlice({
             state.error = null;
             AsyncStorage.removeItem('token');
             AsyncStorage.removeItem('user');
+        },
+
+        setUser: (state, action) => {
+            state.user = action.payload;
+            state.token = action.payload.token;
         },
     },
     extraReducers: (builder) => {
@@ -81,24 +118,47 @@ const authSlice = createSlice({
                 state.error = action.payload || 'Check your connection or try again later.';
             })
 
-        // Register reducers
-        // .addCase(registerUser.pending, (state) => {
-        //     state.isLoading = true;
-        //     state.error = null;
-        // })
-        // .addCase(registerUser.fulfilled, (state, action) => {
-        //     state.isLoading = false;
-        //     state.user = action.payload.user;
-        // })
-        // .addCase(registerUser.rejected, (state, action) => {
-        //     state.isLoading = false;
-        //     state.error = action.payload || 'Registration failed. Please try again.';
-        //     console.error(action.error.message);
-        // });
+            // Register reducers
+            .addCase(registerUser.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(registerUser.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.user = action.payload.user;
+            })
+            .addCase(registerUser.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload || 'Registration failed. Please try again.';
+                console.error(action.error.message);
+            })
+
+            // Update Profile reducers
+            .addCase(updateUser.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(updateUser.fulfilled, (state, action) => {
+                state.isLoading = false;
+                if (action.payload) {
+                    // Update user data in the state
+                    state.user = action.payload.user || action.payload;
+                    console.log("user 2", action.payload.user)
+                } else {
+                    state.error = 'Failed to update profile';
+                }
+            })
+            .addCase(updateUser.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload || 'Failed to update profile. Please try again later.';
+            });
+
+
+
     },
 });
 
 // Export the logout action if needed
-export const { logout } = authSlice.actions;
+export const { logout, setUser } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PromptBox from '../PromptBox.js/Prompt';
-import { logout } from '../../Redux/Slices/authslice';
+import { logout, updateUser } from '../../Redux/Slices/authslice';
+import { useDispatch, useSelector } from 'react-redux';
+import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
+import Toast from 'react-native-toast-message';
 
 const ProfileDetails = ({ route, navigation }) => {
-  const { profileData } = route.params;
+  // const { profileData } = route.params;
+
+  const dispatch = useDispatch()
+
+  const profileData = useSelector(state => state.auth.user);
+
+  useFetchUserFromStorage();
 
   const [isPromptVisible, setIsPromptVisible] = useState(false);
+
+  // State to track if we're in edit mode
+  const [isEditing, setIsEditing] = useState(false);
+
+  // State to track temporary edited data
+  const [editedData, setEditedData] = useState({
+    userName: profileData?.userName,
+    mobileNo: profileData?.mobileNo,
+    email: profileData?.email,
+    address: profileData?.address,
+  });
 
   const handleLogout = () => {
     setIsPromptVisible(true);
@@ -23,7 +43,37 @@ const ProfileDetails = ({ route, navigation }) => {
 
   const handleCancelLogout = () => {
     setIsPromptVisible(false);
-    console.log("Canceled logout");
+    console.log('Canceled logout');
+  };
+
+  // Toggle between edit and view mode
+  const toggleEditMode = () => {
+    setIsEditing((prevState) => !prevState);
+  };
+
+  // Handle save changes
+  const handleSaveChanges = async () => {
+    try {
+
+      const response = await dispatch(updateUser(editedData)).unwrap();
+      setIsEditing(false);
+
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: response.messsage || 'Profile Edited Successfully',
+      });
+
+
+    } catch (error) {
+
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Profile Edit Failed',
+        text2: error?.message || 'An error occurred while saving your changes.',
+      });
+    }
   };
 
 
@@ -37,10 +87,13 @@ const ProfileDetails = ({ route, navigation }) => {
           <Icon name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Personal Details</Text>
+        <TouchableOpacity onPress={toggleEditMode} style={styles.editIcon}>
+          <Icon name="edit" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
 
       {/* Profile Details */}
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.profileInfo}>
           <Icon
             name="user"
@@ -50,40 +103,68 @@ const ProfileDetails = ({ route, navigation }) => {
           />
           <Text style={styles.detailTextName}>{profileData?.userName}</Text>
         </View>
+
+        {/* Editable Name Field */}
         <View style={styles.row}>
           <Icon name="user" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Name</Text>
-            <Text style={styles.detailText}>{profileData?.userName}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedData.userName}
+                onChangeText={(text) => setEditedData({ ...editedData, userName: text })}
+              />
+            ) : (
+              <Text style={styles.detailText}>{profileData?.userName}</Text>
+            )}
           </View>
         </View>
 
         <View style={styles.hrLine} />
+
+        {/* Editable Phone Field */}
         <View style={styles.row}>
           <Icon name="phone" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Phone</Text>
-            <Text style={styles.detailText}>{profileData?.mobileNo}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedData.mobileNo}
+                onChangeText={(text) => setEditedData({ ...editedData, mobileNo: text })}
+                keyboardType="phone-pad"
+              />
+            ) : (
+              <Text style={styles.detailText}>{profileData?.mobileNo}</Text>
+            )}
           </View>
         </View>
 
         <View style={styles.hrLine} />
+
+        {/* Editable Email Field */}
         <View style={styles.row}>
           <Icon name="message-square" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Email</Text>
-            <Text style={styles.detailText}>{profileData?.email}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedData.email}
+                onChangeText={(text) => setEditedData({ ...editedData, email: text })}
+              />
+            ) : (
+              <Text style={styles.detailText}>{profileData?.email}</Text>
+            )}
           </View>
         </View>
 
         <View style={styles.hrLine} />
+
+        {/* Non-editable Aadhaar Number */}
         <View style={styles.row}>
-          <Icon
-            name="credit-card"
-            size={28}
-            color="#FF6B35"
-            style={styles.icon}
-          />
+          <Icon name="credit-card" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Aadhar Card No</Text>
             <Text style={styles.detailText}>{profileData?.aadharCardNo}</Text>
@@ -91,20 +172,44 @@ const ProfileDetails = ({ route, navigation }) => {
         </View>
 
         <View style={styles.hrLine} />
+
+        {/* Editable Address Field */}
         <View style={styles.row}>
           <Icon name="map-pin" size={28} color="#FF6B35" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Address</Text>
-            <Text style={styles.detailText}>{profileData.address}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editedData.address}
+                onChangeText={(text) => setEditedData({ ...editedData, address: text })}
+              />
+            ) : (
+              <Text style={styles.detailText}>{profileData?.address}</Text>
+            )}
           </View>
         </View>
+
         <View style={styles.hrLine} />
 
+        {/* Edit/Save Button */}
+        {
+          isEditing && (
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={handleSaveChanges}>
+              <Text style={styles.editButtonText}>Save</Text>
+            </TouchableOpacity>
+          )
+        }
+
+
+        {/* Logout Button */}
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Icon name="log-out" size={28} color="#FF6B35" />
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* PromptBox to confirm logout */}
       <PromptBox
@@ -121,7 +226,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f5f5f5',
+  },
+  editIcon: {
+    position: 'absolute',
+    right: 20,
+    top: 30
+  },
+  input: {
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginTop: 5,
+    flex: 1,
+  },
+  editButton: {
+    // marginBlock: 10,
+    paddingVertical: 10,
+    backgroundColor: '#FF6B35',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   option: {
     flexDirection: 'row',
@@ -133,7 +264,6 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontWeight: '700',
-    fontFamily: 'Poppins-Regular',
     color: '#FF6B35',
     marginLeft: 18,
   },
@@ -144,7 +274,7 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 20,
     backgroundColor: '#FF6B35',
     paddingVertical: 20,
     paddingHorizontal: 25,
@@ -164,13 +294,14 @@ const styles = StyleSheet.create({
   },
   headerBar: {
     backgroundColor: '#FF6B35',
-    height: 60,
+    height: 70,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
-    paddingTop: 15,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
+    paddingTop: 10,
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
+    elevation: 5,
   },
   backButton: {
     position: 'absolute',

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert }
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import { registerUser } from '../../Redux/Slices/authslice';
+import Toast from 'react-native-toast-message';
 
 export default function Register({ navigation }) {
   const [name, setName] = useState('');
@@ -89,7 +90,7 @@ export default function Register({ navigation }) {
   const handleRegister = async () => {
     if (isFormValid()) {
       const payload = {
-        name: name,
+        userName: name,
         aadharCardNo: aadharNumber,
         mobileNo: mobileNumber,
         email: email,
@@ -98,8 +99,18 @@ export default function Register({ navigation }) {
       };
 
       try {
+        console.log(payload, "<-------- payload")
         // Dispatch the registration action
-        await dispatch(registerUser(payload));
+        await dispatch(registerUser(payload)).unwrap() // Automatically resolves on success or throws on failure
+          .then((response) => {
+            // On success, show a success toast and navigate to BottomNavigation
+            Toast.show({
+              type: 'success',
+              position: 'top',
+              text1: 'User registered successfully',
+            });
+            navigation.navigate('BottomNavigation');
+          })
 
         // Navigate to Login screen after successful registration
         navigation.navigate('Login');

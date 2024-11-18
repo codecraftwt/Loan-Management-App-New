@@ -1,23 +1,28 @@
-
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login } from '../Slices/authslice';
+import { setUser } from '../Slices/authslice';
 
 
 const useFetchUserFromStorage = () => {
     const dispatch = useDispatch();
+    const user = useSelector(state => state.auth.user);
 
     useEffect(() => {
         const fetchUser = async () => {
-            try {
-                // Retrieve token and user data from AsyncStorage
-                const token = await AsyncStorage.getItem('token');
-                const user = await AsyncStorage.getItem('user');
+            // If user already exists in Redux, no need to fetch again
+            if (user) return;
 
-                if (token && user) {
-                    const parsedUser = JSON.parse(user);
-                    dispatch(login({ ...parsedUser, token }));
+            try {
+                const token = await AsyncStorage.getItem('token');
+                const userData = await AsyncStorage.getItem('user');
+
+                if (token && userData) {
+                    const parsedUser = JSON.parse(userData);
+                    console.log(parsedUser, "Parsed user");
+
+                    // Dispatch the setUser action to update the Redux store
+                    dispatch(setUser(parsedUser));
                 }
             } catch (error) {
                 console.error('Error fetching user from AsyncStorage:', error);
@@ -25,7 +30,7 @@ const useFetchUserFromStorage = () => {
         };
 
         fetchUser();
-    }, [dispatch]);
+    }, [user, dispatch]);
 
 };
 

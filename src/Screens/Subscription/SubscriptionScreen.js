@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 
-const SubscriptionScreen = () => {
+// Subscription Screen Component
+const SubscriptionScreen = ({ navigation }) => {
     const [selectedPlan, setSelectedPlan] = useState(null);
 
+    // Function to handle plan selection
     const handleSubscription = (plan) => {
         setSelectedPlan(plan);
-
     };
 
     return (
@@ -14,27 +16,42 @@ const SubscriptionScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header Bar */}
                 <View style={styles.headerBar}>
-                    <Text style={styles.headerText}>Subscription Plans</Text>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}  // Using navigation prop to go back
+                    >
+
+                        <Icon name="arrow-left" size={24} color="#FFFFFF" />
+
+                    </TouchableOpacity>
+                    <Text style={styles.headerText}>Subscription</Text>
                 </View>
 
+                {/* Subscription Plan Selection */}
                 <View style={styles.container}>
                     <Text style={styles.title}>Choose Your Plan</Text>
-                    <Text style={styles.subtitle}>Select a plan to proceed with the subscription and enjoy premium features.</Text>
+                    <Text style={styles.subtitle}>
+                        Select a plan to proceed with the subscription and enjoy premium features.
+                    </Text>
 
-                    {/* Monthly Plan */}
+                    {/* Monthly Plan Button */}
                     <TouchableOpacity
                         style={[styles.button, selectedPlan === 'Monthly' && styles.selectedButton]}
                         onPress={() => handleSubscription('Monthly')}
                     >
-                        <Text style={[styles.buttonText, selectedPlan === 'Monthly' && styles.selectedButtonText]}>Monthly Plan - ₹399</Text>
+                        <Text style={[styles.buttonText, selectedPlan === 'Monthly' && styles.selectedButtonText]}>
+                            Monthly Plan - ₹399
+                        </Text>
                     </TouchableOpacity>
 
-                    {/* Yearly Plan */}
+                    {/* Yearly Plan Button */}
                     <TouchableOpacity
                         style={[styles.button, selectedPlan === 'Yearly' && styles.selectedButton]}
                         onPress={() => handleSubscription('Yearly')}
                     >
-                        <Text style={[styles.buttonText, selectedPlan === 'Yearly' && styles.selectedButtonText]}>Yearly Plan - ₹2999</Text>
+                        <Text style={[styles.buttonText, selectedPlan === 'Yearly' && styles.selectedButtonText]}>
+                            Yearly Plan - ₹2999
+                        </Text>
                     </TouchableOpacity>
 
                     {/* Proceed Button */}
@@ -49,6 +66,7 @@ const SubscriptionScreen = () => {
     );
 };
 
+// Styles for the Subscription Screen
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
@@ -57,23 +75,31 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 16,
-        paddingBlock: 30,
-
+        paddingVertical: 30,
         justifyContent: 'center',
         alignItems: 'center',
     },
     headerBar: {
         backgroundColor: '#FF6B35',
-        height: 60,
+        height: 70,
         justifyContent: 'center',
         alignItems: 'center',
-        borderBottomEndRadius: 15,
-        borderBottomStartRadius: 15,
+        paddingTop: 10,
+        borderBottomEndRadius: 30,
+        borderBottomStartRadius: 30,
+        elevation: 5,
     },
     headerText: {
         color: '#FFFFFF',
         fontSize: 22,
         fontFamily: 'Montserrat-Bold',
+        letterSpacing: 1,
+    },
+    backButton: {
+        position: 'absolute',
+        left: 15,
+        top: 18,
+        padding: 10,
     },
     title: {
         fontSize: 28,

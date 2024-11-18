@@ -1,27 +1,32 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useDispatch, useSelector } from 'react-redux';
 import { getLoanByAadhar } from '../../Redux/Slices/loanSlice';
 import { useFocusEffect } from '@react-navigation/native';
+import { logo } from '../../Assets';
 
 export default function Inward({ navigation }) {
+  const dispatch = useDispatch();
+
   const user = useSelector(state => state.auth.user);
+
+  const { loans, totalAmount, loading, error } = useSelector((state) => state.loans);
+
   const aadhaarNumber = user?.aadharCardNo;
 
-  // console.log("Users data -->", user)
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // console.log("Aadhar card number -->", aadhaarNumber)
-
-  const dispatch = useDispatch();
-  const { loans, totalAmount, loading, error } = useSelector((state) => state.loans);
+  // Filtered loans based on search query
+  const filteredLoans = loans.filter((loan) =>
+    loan.purpose.toLowerCase().includes(searchQuery.toLowerCase()) // Case-insensitive search by name
+  );
 
   useFocusEffect(
     React.useCallback(() => {
-      // Your API call here
       if (aadhaarNumber) {
         dispatch(getLoanByAadhar(aadhaarNumber));
-        console.log("API Call Triggered on Screen Focus");
+        console.log('API Call Triggered on Screen Focus');
       }
     }, [dispatch, aadhaarNumber])
   );
@@ -30,11 +35,18 @@ export default function Inward({ navigation }) {
     <View style={styles.container}>
       <View style={styles.headerBar}>
         <Text style={styles.headerText}>My Taken Loans</Text>
+        <Image source={logo} style={styles.logo} />
       </View>
 
-      {/* Display total amount */}
-      <View style={styles.totalAmountContainer}>
-        <Text style={styles.totalAmountText}>Total Loan Amount: {totalAmount} Rs</Text>
+
+
+      <View style={styles.searchBarContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by purpose.."
+          value={searchQuery}
+          onChangeText={setSearchQuery} // Update search query on input change
+        />
       </View>
 
       {/* List of loans */}
@@ -43,58 +55,67 @@ export default function Inward({ navigation }) {
           <ActivityIndicator size="large" color="#FF6B35" />
         </View>
       ) : (
-        <ScrollView style={styles.nameListContainer}>
-          {loans.length === 0 ? (
-            <Text style={styles.emptyText}>No loans found</Text>
-          ) : (
-            loans.map((data, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() =>
-                  navigation.navigate('LoanDetailScreen', { loanDetails: data })
-                }
-              >
-                <View style={styles.dataCard}>
-                  <View style={styles.dataContainer}>
-                    <View>
-                      <Icon
-                        name="user"
-                        size={30}
-                        color="#FF6B35"
-                        style={styles.userIcon}
-                      />
-                    </View>
-                    <View style={styles.textContainer}>
-                      <Text style={styles.dataLabel}>
-                        Full Name:{' '}
-                        <Text style={styles.dataText}>{data.name}</Text>
-                      </Text>
-                      <Text style={styles.dataLabel}>
-                        Loan Balance:{' '}
-                        <Text style={styles.dataText}>{data.amount}</Text> Rs
-                      </Text>
+        <>
+          {/* Display total amount */}
+          <View style={styles.totalAmountContainer}>
+            <Text style={styles.totalAmountText}>Total Loan Amount: {totalAmount} Rs</Text>
+          </View>
 
-                      {/* Dynamically change the color of loan status text */}
-                      <Text style={styles.dataLabel}>
-                        Loan Status:{' '}
-                        <Text
-                          style={[
-                            styles.dataText,
-                            data.status === 'pending' ? styles.pendingStatus :
-                              data.status === 'paid' ? styles.paidStatus :
-                                styles.defaultStatus
-                          ]}
-                        >
-                          {data.status}
+          <ScrollView style={styles.nameListContainer}>
+            {filteredLoans.length === 0 ? (
+              <Text style={styles.emptyText}>No loans found</Text>
+            ) : (
+              filteredLoans.map((data, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    navigation.navigate('LoanDetailScreen', { loanDetails: data, isEdit: false })
+                  }
+                >
+                  <View style={styles.dataCard}>
+                    <View style={styles.dataContainer}>
+                      <View>
+                        <Icon
+                          name="user"
+                          size={30}
+                          color="#FF6B35"
+                          style={styles.userIcon}
+                        />
+                      </View>
+                      <View style={styles.textContainer}>
+                        <Text style={styles.dataLabel}>
+                          Full Name:{' '}
+                          <Text style={styles.dataText}>{data.name}</Text>
                         </Text>
-                      </Text>
+                        <Text style={styles.dataLabel}>
+                          Loan Balance:{' '}
+                          <Text style={styles.dataText}>{data.amount}</Text> Rs
+                        </Text>
+
+                        {/* Dynamically change the color of loan status text */}
+                        <Text style={styles.dataLabel}>
+                          Loan Status:{' '}
+                          <Text
+                            style={[
+                              styles.dataText,
+                              data.status === 'pending'
+                                ? styles.pendingStatus
+                                : data.status === 'paid'
+                                  ? styles.paidStatus
+                                  : styles.defaultStatus,
+                            ]}
+                          >
+                            {data.status}
+                          </Text>
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </ScrollView>
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
+        </>
       )}
     </View>
   );
@@ -103,35 +124,67 @@ export default function Inward({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    // backgroundColor: '#f9f9f9',
+    backgroundColor: '#f5f5f5',
   },
   headerBar: {
     backgroundColor: '#FF6B35',
-    height: 60,
+    height: 70,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 15,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
+    paddingTop: 10,
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
     elevation: 5,
+    position: 'relative',
   },
   headerText: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: 'Montserrat-Bold',
     letterSpacing: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 40,
+    position: 'absolute',
+    right: 0,
+    top: 15,
   },
   totalAmountContainer: {
-    padding: 10,
-    backgroundColor: '#fff',
-    marginBlock: 10,
-    borderBottomWidth: 1,
+    padding: 20,
     borderBottomColor: '#ddd',
+  },
+  searchBarContainer: {
+    paddingHorizontal: 15,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    fontSize: 16,
   },
   totalAmountText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 'bold',
+    color: '#FF6B35',
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   loadingText: {
     textAlign: 'center',
@@ -140,7 +193,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 16,
     color: '#888',
     marginTop: 50,
   },
@@ -160,13 +213,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+
   },
   userIcon: {
-    marginRight: 10,
+    marginHorizontal: 10,
   },
   textContainer: {
     flexDirection: 'column',
-    marginTop: 10,
+    paddingHorizontal: 10
   },
   dataLabel: {
     fontSize: 14,
@@ -174,21 +228,23 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 0,
     marginTop: 4,
+
   },
   dataText: {
     fontSize: 14,
     fontWeight: '400',
     color: '#333',
+
   },
 
   // New Styles for Loan Status
   pendingStatus: {
     color: 'red', // Pending status will be red
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   paidStatus: {
     color: 'green', // Paid status will be green
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   defaultStatus: {
     color: '#333', // Default color for other statuses (if any)

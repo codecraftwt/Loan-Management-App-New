@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -12,28 +12,44 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CountryPicker from 'react-native-country-picker-modal';
-import { useDispatch } from 'react-redux';
-import { createLoan } from '../../Redux/Slices/loanSlice';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { useDispatch, useSelector } from 'react-redux';
+import { createLoan, updateLoan } from '../../Redux/Slices/loanSlice';
 
 export default function AddDetails({ route, navigation }) {
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const [fullName, setFullName] = useState('');
-  const [contactNo, setContactNo] = useState('');
-  const [aadharNo, setAadharNo] = useState('');
-  const [address, setAddress] = useState('');
-  const [amount, setAmount] = useState('');
-  const [loanStartDate, setLoanStartDate] = useState('');
-  const [loanEndDate, setLoanEndDate] = useState('');
-  const [purpose, setPurpose] = useState('');
+  const { error } = useSelector(state => state.loans);
+
+  // If we're editing an existing loan, load the existing loan data
+  const { loanDetails } = route.params || {}; // Assuming loanDetails are passed when editing
+
+  const [fullName, setFullName] = useState(loanDetails?.name || '');
+  const [contactNo, setContactNo] = useState(loanDetails?.mobileNumber || '');
+  const [aadharNo, setAadharNo] = useState(loanDetails?.aadhaarNumber || '');
+  const [address, setAddress] = useState(loanDetails?.address || '');
+  const [amount, setAmount] = useState(loanDetails?.amount.toString() || '');
+  const [loanStartDate, setLoanStartDate] = useState(loanDetails?.loanStartDate || null);
+  const [loanEndDate, setLoanEndDate] = useState(loanDetails?.loanEndDate || null);
+  const [purpose, setPurpose] = useState(loanDetails?.purpose || '');
   const [errorMessage, setErrorMessage] = useState('');
   const [showOldHistoryButton, setShowOldHistoryButton] = useState(false);
   const [countryCode, setCountryCode] = useState('IN'); // default to India
   const [callingCode, setCallingCode] = useState('91'); // default calling code
 
+  const [isStartDatePickerVisible, setStartDatePickerVisible] = useState(false);
+  const [isEndDatePickerVisible, setEndDatePickerVisible] = useState(false);
+
   const [apiErrors, setApiErrors] = useState([]);  // State to store API error messages
 
+  // Get today's date (current date) for min date validation
+  const today = new Date();
+  const todayString = today.toISOString().split('T')[0]; // 'yyyy-mm-dd' format for date picker
+
+  console.log("Loan data for editing: ", loanDetails);
+
+  // Function to validate form fields
   const validateForm = () => {
     if (
       !fullName ||
@@ -52,10 +68,17 @@ export default function AddDetails({ route, navigation }) {
       setErrorMessage('Amount should be a positive number.');
       return false;
     }
+    // Check if start date is before end date
+    if (loanStartDate && loanEndDate && loanStartDate >= loanEndDate) {
+      setErrorMessage('Loan start date must be before loan end date.');
+      return false;
+    }
+
     setErrorMessage('');
     return true;
   };
 
+  // Function to handle form submission
   const handleSubmit = async () => {
     if (validateForm()) {
       const newData = {
@@ -69,31 +92,35 @@ export default function AddDetails({ route, navigation }) {
         purpose,
       };
 
-      console.log("Form data : ", newData);
+      // console.log("Form data: ", newData);
 
       try {
-        console.log("API call")
-        const response = await dispatch(createLoan(newData));
-
-        // Check if the dispatch was successful or failed
-        if (createLoan.fulfilled.match(response)) {
-          console.log("Loan created successfully");
-          navigation.goBack();
+        let response;
+        if (loanDetails) {
+          // If loanDetails exists, update the loan
+          response = await dispatch(updateLoan({ ...newData, id: loanDetails._id }));
+          console.log("update API", loanDetails.id)
         } else {
-          // If the action fails, store the error messages in state
-          console.error('Failed to create loan:', resultAction.payload);
-          if (resultAction.payload && resultAction.payload.errors) {
-            setApiErrors(resultAction.payload.errors);  // Set the errors from the API response
-          }
+          // Otherwise, create a new loan
+          response = await dispatch(createLoan(newData));
         }
 
-      }
-      catch (error) {
-        console.error('Error submitting data:', error);
+        if (createLoan.fulfilled.match(response) || updateLoan.fulfilled.match(response)) {
+          console.log("Loan saved successfully");
+          navigation.navigate('Outward');
+        } else {
+          if (response.payload && response.payload.errors) {
+            setErrorMessage(response.payload.errors.join(', '));  // Set the errors from the API response
+          }
+        }
+      } catch (error) {
+        console.error('Error submitting data:', error.response.data.message);
+        setErrorMessage('An error occurred while saving the loan.');
       }
     }
   };
 
+  // Function to reset the form
   const resetForm = () => {
     setFullName('');
     setContactNo('');
@@ -107,40 +134,6 @@ export default function AddDetails({ route, navigation }) {
     setShowOldHistoryButton(false);
   };
 
-  const handleFullNameChange = text => {
-    const namePattern = /^[a-zA-Z\s]*$/;
-    if (namePattern.test(text)) {
-      setFullName(text);
-    }
-  };
-
-  const handleContactNoChange = text => {
-    const mobilePattern = /^[0-9]{0,10}$/;
-    if (mobilePattern.test(text) && text.length <= 10) {
-      setContactNo(text);
-    }
-  };
-
-
-  const handleAmountChange = text => {
-    const amountPattern = /^[0-9]*\.?[0-9]*$/;
-    if (amountPattern.test(text)) {
-      setAmount(text);
-    }
-  };
-
-  const handleLoanStartDateChange = text => {
-    setLoanStartDate(text);
-  };
-
-  const handleLoanEndDateChange = text => {
-    setLoanEndDate(text);
-  };
-
-  const handlePurposeChange = text => {
-    setPurpose(text);
-  };
-
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
@@ -152,8 +145,24 @@ export default function AddDetails({ route, navigation }) {
     }
   };
 
+  const handleContactNoChange = text => {
+    const mobilePattern = /^[0-9]{0,10}$/;
+    if (mobilePattern.test(text) && text.length <= 10) {
+      setContactNo(text);
+    }
+  };
 
+  // Handle the loan start date change
+  const handleLoanStartDateChange = (date) => {
+    setLoanStartDate(date);
+    setStartDatePickerVisible(false);
+  };
 
+  // Handle the loan end date change
+  const handleLoanEndDateChange = (date) => {
+    setLoanEndDate(date);
+    setEndDatePickerVisible(false);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -166,21 +175,20 @@ export default function AddDetails({ route, navigation }) {
           onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Add Details</Text>
+        <Text style={styles.headerText}>{loanDetails ? 'Edit Loan Details' : 'Add Loan Details'}</Text>
       </View>
       <ScrollView style={styles.scrollViewContainer}>
-        <Text style={styles.msgText}>Fill the below form to add loan</Text>
+        <Text style={styles.msgText}>Fill the below form to {loanDetails ? 'update' : 'add'} loan</Text>
         <TextInput
           style={styles.input}
           placeholder="Full Name"
           value={fullName}
-          onChangeText={handleFullNameChange}
+          onChangeText={setFullName}
           onBlur={dismissKeyboard}
           returnKeyType="next"
         />
 
         <View style={styles.phoneInputContainer}>
-          {/* Country Picker Icon */}
           <TouchableOpacity
             style={styles.countryPickerContainer}
             onPress={() => setCountryCode('')}>
@@ -215,7 +223,6 @@ export default function AddDetails({ route, navigation }) {
           returnKeyType="next"
         />
 
-        {/* Conditionally render the "Old history" button */}
         {showOldHistoryButton && (
           <TouchableOpacity
             style={styles.oldHistoryButton}
@@ -239,7 +246,7 @@ export default function AddDetails({ route, navigation }) {
             style={styles.loanAmountInput}
             placeholder="Amount"
             value={amount}
-            onChangeText={handleAmountChange}
+            onChangeText={setAmount}
             onBlur={dismissKeyboard}
             keyboardType="numeric"
             returnKeyType="done"
@@ -247,45 +254,62 @@ export default function AddDetails({ route, navigation }) {
           <Text style={styles.rsText}>Rs</Text>
         </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Loan Start Date"
-          value={loanStartDate}
-          onChangeText={handleLoanStartDateChange}
-          onBlur={dismissKeyboard}
-          returnKeyType="next"
+        <TouchableOpacity onPress={() => setStartDatePickerVisible(true)}>
+          <TextInput
+            style={styles.input}
+            placeholder="Loan Start Date"
+            value={loanStartDate ? new Date(loanStartDate).toLocaleDateString() : ''}
+            editable={false}
+          />
+        </TouchableOpacity>
+
+        <DateTimePickerModal
+          isVisible={isStartDatePickerVisible}
+          mode="date"
+          onConfirm={handleLoanStartDateChange}
+          onCancel={() => setStartDatePickerVisible(false)}
+          minimumDate={today} // Disable past dates
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Loan End Date"
-          value={loanEndDate}
-          onChangeText={handleLoanEndDateChange}
-          onBlur={dismissKeyboard}
-          returnKeyType="next"
+        <TouchableOpacity onPress={() => setEndDatePickerVisible(true)}>
+          <TextInput
+            style={styles.input}
+            placeholder="Loan End Date"
+            value={loanEndDate ? new Date(loanEndDate).toLocaleDateString() : ''}
+            editable={false}
+          />
+        </TouchableOpacity>
+
+        <DateTimePickerModal
+          isVisible={isEndDatePickerVisible}
+          mode="date"
+          onConfirm={handleLoanEndDateChange}
+          onCancel={() => setEndDatePickerVisible(false)}
+          minimumDate={loanStartDate || today} // End date must be after start date
         />
 
         <TextInput
           style={styles.textArea}
           placeholder="Purpose"
           value={purpose}
-          onChangeText={handlePurposeChange}
+          onChangeText={setPurpose}
           onBlur={dismissKeyboard}
           multiline
           textAlignVertical="top"
         />
 
-        {errorMessage ? (
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        ) : null}
+        {(errorMessage || error) && (
+          <Text style={styles.errorText}>
+            {errorMessage || error?.message || 'An unknown error occurred.'}
+          </Text>
+        )}
+
 
         <View style={styles.buttonsContainer}>
-          {/* Add Button */}
           <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Add</Text>
+            <Text style={styles.buttonText}>{loanDetails ? 'Update' : 'Add'}</Text>
           </TouchableOpacity>
 
-          {/* Reset Button */}
           <TouchableOpacity style={styles.resetButton} onPress={resetForm}>
             <Text style={styles.resetButtonText}>Reset</Text>
           </TouchableOpacity>
@@ -295,7 +319,6 @@ export default function AddDetails({ route, navigation }) {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -303,12 +326,14 @@ const styles = StyleSheet.create({
   },
   headerBar: {
     backgroundColor: '#FF6B35',
-    height: 60,
+    height: 70,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingTop: 10,
     paddingHorizontal: 20,
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
+    elevation: 5,
   },
   backButton: {
     marginRight: 10,
@@ -318,19 +343,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
     flex: 1,
-    marginLeft: 20
-    // textAlign: 'center',
+    marginLeft: 20,
   },
   msgText: {
     color: '#000000',
     fontSize: 16,
     fontFamily: 'Montserrat-Regular',
     marginBottom: 20,
-    // textAlign: 'center',
   },
   scrollViewContainer: {
     marginTop: 20,
-    // justifyContent: 'center',
+    marginBottom: 20,
+    // paddingBottom: 40,
     paddingHorizontal: 20,
   },
   input: {
@@ -340,7 +364,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingLeft: 10,
     borderRadius: 10,
-    fontSize: 15
+    fontSize: 15,
   },
   textArea: {
     height: 90,
@@ -381,7 +405,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   resetButton: {
-    backgroundColor: '#fc9960',
+    backgroundColor: 'gray',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -391,7 +415,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginBlock: 20,
   },
   buttonText: {
     color: '#fff',
@@ -411,13 +435,14 @@ const styles = StyleSheet.create({
   oldHistoryButton: {
     backgroundColor: '#FF6B35',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     marginBottom: 20,
     alignItems: 'center',
   },
   oldHistoryButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   phoneInputContainer: {
     flexDirection: 'row',
@@ -426,7 +451,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginBottom: 10,
     position: 'relative',
-    borderRadius: '10'
+    borderRadius: '10',
   },
 
   inputCode: {

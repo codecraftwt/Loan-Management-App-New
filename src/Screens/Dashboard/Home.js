@@ -5,44 +5,41 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import {
-  applyLoan,
-  calculateEmi,
-  loanStatus,
-  profileImage,
-  searchBorrowers,
-} from '../../Assets'; // Make sure these imports are correct
+import Icon from 'react-native-vector-icons/Feather'; // Importing Feather icons for buttons
+import { logo } from '../../Assets';
 
 export default function Home() {
   const navigation = useNavigation();
 
-  // Define the buttons array with images and screen names
-  const buttons = [
-
-
+  // Static data for loan stats
+  const loanStats = [
     {
-      title: 'Search Borrowers',
-      screen: 'SearchLenders',
-      image: require('../../Assets/search-borrowers.jpg'), // Ensure this image path is correct
+      title: "Loans Given",
+      value: 15,
+      icon: 'arrow-up-circle', // Icon for "Loans Given"
+      backgroundColor: '#FF6B35',
     },
     {
-      title: 'My Profile',
-      screen: 'Profile',
-      image: require('../../Assets/profile.jpg'), // Ensure this image path is correct
+      title: "Loans Taken",
+      value: 5,
+      icon: 'arrow-down-circle', // Icon for "Loans Taken"
+      backgroundColor: '#4CAF50',
     },
     {
-      title: 'Check Loan Status',
-      screen: 'Inward',
-      image: require('../../Assets/loan-status.jpg'), // Ensure this image path is correct
+      title: "Loans Paid",
+      value: 4,
+      icon: 'check-circle',
+      backgroundColor: '#2196F3',
     },
     {
-      title: 'Contractor Dashboard',
-      screen: 'ContractorDashboard',
-      image: require('../../Assets/loan-status.jpg'), // Ensure this image path is correct
+      title: "Active Loans",
+      value: 0,
+      icon: 'clock',
+      backgroundColor: 'gray',
     },
   ];
 
@@ -50,45 +47,46 @@ export default function Home() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
-
-      {/* Header Bar */}
+      {/* Header Section */}
       <View style={styles.headerBar}>
         <Text style={styles.headerText}>Home</Text>
+        <Image source={logo} style={styles.logo} />
       </View>
 
       <ScrollView contentContainerStyle={styles.cardsContainer}>
 
-        {/* Main Content */}
-        <View style={styles.content}>
-          <Text style={styles.welcomeText}>Welcome to our App</Text>
-          <Text style={styles.subtitle}>
-            Subscribe to give loans.
-          </Text>
-          <Text style={styles.subtitle}>
-            Need a loan? Just use our service!
-          </Text>
 
-          <TouchableOpacity
-            style={styles.subscribeButton}
-            onPress={() => navigation.navigate('SubscriptionScreen')}>
-            <Text style={styles.subscribeButtonText}>Subscribe</Text>
-          </TouchableOpacity>
+        {/* Main Stats Section */}
+        <View style={styles.statsSection}>
+          <Text style={styles.welcomeText}>Welcome to the Loan App</Text>
+          <Text style={styles.subtitle}>Track your loan activities</Text>
 
-          {/* Render Cards */}
-          <View style={styles.cardsWrapper}>
-            {buttons.map((button, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.card}
-                onPress={() => navigation.navigate(button.screen)}>
-                <Image source={button.image} style={styles.cardImage} />
-                <Text style={styles.cardText}>{button.title}</Text>
-              </TouchableOpacity>
+          <View style={styles.statsWrapper}>
+            {loanStats.map((stat, index) => (
+              <View key={index} style={[styles.statCard, { backgroundColor: stat.backgroundColor }]}>
+                <Icon name={stat.icon} size={40} color="#fff" />
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statTitle}>{stat.title}</Text>
+              </View>
             ))}
           </View>
         </View>
-      </ScrollView >
-    </View >
+
+        {/* Subscribe Section */}
+        <View style={styles.content}>
+          <Text style={styles.additionalInfo}>
+            Need a loan? Apply now or subscribe to give loans!
+          </Text>
+
+          {/* Subscribe Button */}
+          <TouchableOpacity
+            style={styles.subscribeButton}
+            onPress={() => navigation.navigate('SubscriptionScreen')}>
+            <Text style={styles.subscribeButtonText}>Subscribe to Give Loans</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -98,24 +96,94 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   headerBar: {
+    height: 70,
     backgroundColor: '#FF6B35',
-    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomEndRadius: 15,
-    borderBottomStartRadius: 15,
+    paddingTop: 10,
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
+    marginBottom: 30,
+    elevation: 5,
+    position: 'relative',
   },
   headerText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
+    letterSpacing: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
   },
-  content: {
-    flex: 1,
+  logo: {
+    width: 80,
+    height: 40,
+    position: 'absolute',
+    right: 0,    
+    top: 15,
+  },
+  statsSection: {
+    alignItems: 'center',
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  welcomeText: {
+    fontSize: 24,
+    textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  statsWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    width: '100%',
+    flexWrap: 'wrap',  // Allows the cards to wrap to the next line
+    paddingHorizontal: 20,
+  },
+  statCard: {
+    width: '48%',  // Adjust width to fit two cards per row
+    height: 140,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 20,
+    padding: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    marginBottom: 20,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 10,
+  },
+  statTitle: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  content: {
+    alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 20,
+  },
+  additionalInfo: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginBlock: 20,
   },
   subscribeButton: {
     backgroundColor: '#FF6B35',
@@ -123,63 +191,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     width: '80%',
-    marginBlock: 20,
+    marginBottom: 20,
   },
   subscribeButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 18,
-    fontFamily: 'Poppins-SemiBold',
-  },
-  welcomeText: {
-    fontSize: 28,
     fontWeight: 'bold',
-    color: '#53258f',
-    marginBottom: 10,
-    textAlign: 'center', // Ensure centered alignment
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#777',
-    textAlign: 'center',
-  },
-  cardsContainer: {
-    paddingBottom: 20,
-  },
-  cardsWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
-    paddingBottom: 20,
-  },
-  card: {
-    // backgroundColor: '#FF6B35',
-    backgroundColor: '#faf2f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    height: 120,
-    width: 130,
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    marginHorizontal: 0, // Add spacing between cards
-  },
-  cardImage: {
-    width: 80,
-    height: 70,
-    marginBottom: 5,
-    resizeMode: 'contain',
-  },
-  cardText: {
-    // color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 5,
   },
 });
