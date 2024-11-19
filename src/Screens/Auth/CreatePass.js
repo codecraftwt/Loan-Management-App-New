@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,15 +6,19 @@ import {
   TextInput,
   TouchableOpacity,
   StatusBar,
-  Alert,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useDispatch} from 'react-redux';
+import {resetPassword} from '../../Redux/Slices/authslice';
 
-export default function CreatePass({ navigation }) {
+export default function CreatePass({navigation, route}) {
+  const {email, otp} = route.params; // Access email and otp passed from OTP screen
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const dispatch = useDispatch();
 
   const validatePassword = password => {
     const hasLetters = /[a-zA-Z]/.test(password);
@@ -22,19 +26,37 @@ export default function CreatePass({ navigation }) {
     return password.length >= 6 && hasLetters && hasDigits;
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match!');
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        text1: 'Passwords do not match!',
+      });
       return;
     }
 
     if (validatePassword(newPassword)) {
+      // Dispatch resetPassword action
+      const result = await dispatch(
+        resetPassword({email, otp, newPassword}),
+      ).unwrap();
+
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: 'Password reset successfully',
+      });
+
+      // If password reset is successful, navigate to the Login screen
       navigation.navigate('Login');
     } else {
-      Alert.alert(
-        'Error',
-        'Password must be at least 6 characters long and contain both letters and digits.',
-      );
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        text1:
+          'Password must be at least 6 characters long and contain both letters and digits.',
+      });
     }
   };
 
@@ -61,7 +83,7 @@ export default function CreatePass({ navigation }) {
           <Ionicons
             name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
             size={25}
-            color={'#FFA36C'}
+            color={'#f26fb7'}
             style={styles.icon}
           />
         </TouchableOpacity>
@@ -80,14 +102,14 @@ export default function CreatePass({ navigation }) {
           <Ionicons
             name={confirmVisible ? 'eye-off-outline' : 'eye-outline'}
             size={25}
-            color={'#FFA36C'}
+            color={'#f26fb7'}
             style={styles.icon}
           />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity
-        style={[styles.applyButton, { opacity: isButtonDisabled ? 0.5 : 1 }]}
+        style={[styles.applyButton, {opacity: isButtonDisabled ? 0.5 : 1}]}
         onPress={handleApply}
         disabled={isButtonDisabled}>
         <Text style={styles.applyButtonText}>Apply</Text>
@@ -120,13 +142,13 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#FFA36C',
+    borderColor: '#f26fb7',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },

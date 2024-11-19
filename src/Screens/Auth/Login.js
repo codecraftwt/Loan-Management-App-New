@@ -96,7 +96,7 @@ export default function LoginScreen({ navigation }) {
             <Ionicons
               name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
               size={25}
-              color={'#FFA36C'}
+              color={'#f26fb7'}
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -116,7 +116,7 @@ export default function LoginScreen({ navigation }) {
 
       <View style={styles.linksContainer}>
         {/* Sign in with Google Button */}
-        <TouchableOpacity style={styles.googleButton} onPress={() => showmsg()}>
+        <TouchableOpacity style={styles.googleButton}>
           <Image
             source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw7JaI54p1i3v3WAoqEiQE1Jduquut71TkNSKSTNoixuv9DQQGdj61Ex_10nv6NM5wIhY&usqp=CAU' }}
             style={styles.googleIcon}
@@ -153,13 +153,13 @@ const styles = StyleSheet.create({
     color: '#b80266',
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   headerText: {
     fontSize: 22,
     color: '#333',
     fontFamily: 'Montserrat-Bold',
-    marginBottom: 40,
+    marginBottom: 34,
     textAlign: 'center',
   },
   inputContainer: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 60,
-    borderColor: '#FFA36C',
+    borderColor: '#f26fb7',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#FFA36C',
+    borderColor: '#f26fb7',
     borderWidth: 1,
     borderRadius: 8,
     height: 55,

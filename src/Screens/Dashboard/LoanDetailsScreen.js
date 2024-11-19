@@ -1,28 +1,37 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Feather';
 import moment from 'moment';
 
-export default function LoanDetailScreen({ route, navigation }) {
-  const { loanDetails, isEdit } = route.params;
+export default function LoanDetailScreen({route, navigation}) {
+  const {loanDetails, isEdit} = route.params;
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   // Format dates using moment
-  const formatDate = (date) => moment(date).format('DD-MM-YYYY');
+  const formatDate = date => moment(date).format('DD-MM-YYYY');
 
   // Default profile icon
-  const defaultProfileIcon = <Icon name="user" size={50} color="#FFFFFF" style={styles.profileIcon} />;
+  const defaultProfileIcon = (
+    <Icon name="user" size={50} color="#FFFFFF" style={styles.profileIcon} />
+  );
 
   // Check if the user has an image or fall back to the default icon
   const profileImage = loanDetails.profileImage
-    ? { uri: loanDetails.profileImage }
+    ? {uri: loanDetails.profileImage}
     : null;
 
   const handleEdit = () => {
-    navigation.navigate('AddDetails', { loanDetails }); // Navigate to Edit Screen
+    navigation.navigate('AddDetails', {loanDetails}); // Navigate to Edit Screen
   };
 
   return (
@@ -35,19 +44,15 @@ export default function LoanDetailScreen({ route, navigation }) {
         </TouchableOpacity>
         <Text style={styles.headerText}>Loan Details</Text>
         {/* Edit Icon */}
-        {
-          isEdit && (
-            <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-              <Icon name="edit" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          )
-        }
-
+        {isEdit && (
+          <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
+            <Icon name="edit" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ScrollView for loan details */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-
         {/* Loan Information */}
         <View style={styles.loanInfoContainer}>
           <Text style={styles.loanTitle}>Loan Overview</Text>
@@ -84,7 +89,12 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Aadhar No */}
           <View style={styles.row}>
-            <Icon name="credit-card" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="credit-card"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Aadhar Card No</Text>
               <Text style={styles.value}>{loanDetails.aadhaarNumber}</Text>
@@ -94,7 +104,12 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Loan Balance */}
           <View style={styles.row}>
-            <Icon name="dollar-sign" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="dollar-sign"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Amount</Text>
               <Text style={styles.value}>{loanDetails.amount} Rs</Text>
@@ -104,7 +119,12 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Loan Status */}
           <View style={styles.row}>
-            <Icon name="check-circle" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="check-circle"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Status</Text>
               <Text style={styles.value}>{loanDetails.status}</Text>
@@ -124,27 +144,62 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Start Date */}
           <View style={styles.row}>
-            <Icon name="calendar" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="calendar"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Start Date</Text>
-              <Text style={styles.value}>{formatDate(loanDetails.loanStartDate)}</Text>
+              <Text style={styles.value}>
+                {formatDate(loanDetails.loanStartDate)}
+              </Text>
             </View>
           </View>
           <View style={styles.separator} />
 
           {/* End Date */}
           <View style={styles.row}>
-            <Icon name="calendar" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="calendar"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan End Date</Text>
-              <Text style={styles.value}>{formatDate(loanDetails.loanEndDate)}</Text>
+              <Text style={styles.value}>
+                {formatDate(loanDetails.loanEndDate)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.separator} />
+
+          <View style={styles.row}>
+            <Icon
+              name="arrow-down-circle"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
+            <View style={styles.dataContainer}>
+              <Text style={styles.label}>Loan Taken From</Text>
+              <Text style={styles.value}>
+                {loanDetails?.lenderId?.userName}
+              </Text>
             </View>
           </View>
           <View style={styles.separator} />
 
           {/* Address */}
           <View style={styles.row}>
-            <Icon name="map-pin" size={28} color="#b80266" style={styles.icon} />
+            <Icon
+              name="map-pin"
+              size={28}
+              color="#b80266"
+              style={styles.icon}
+            />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Address</Text>
               <Text style={styles.value}>{loanDetails.address}</Text>
@@ -165,7 +220,7 @@ const styles = StyleSheet.create({
   editButton: {
     position: 'absolute',
     right: 20,
-    top: 30
+    top: 30,
   },
 
   headerBar: {
@@ -199,19 +254,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
   },
 
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 50,
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: '#FFA36C',
+    borderColor: 'white',
   },
 
   profileIcon: {
@@ -236,7 +291,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginHorizontal: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -257,7 +312,7 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    marginRight: 12,
+    marginRight: 15,
   },
 
   dataContainer: {

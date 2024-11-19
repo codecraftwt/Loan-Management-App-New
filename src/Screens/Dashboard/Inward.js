@@ -112,6 +112,10 @@ export default function Inward({ navigation }) {
                           </Text>
                         </Text>
                         <Text style={styles.dataLabel}>
+                          Loan Taken From:{' '}
+                          <Text style={styles.dataText}>{data?.lenderId?.userName}</Text>
+                        </Text>
+                        <Text style={styles.dataLabel}>
                           Loan End Date:{' '}
                           <Text style={styles.dataText}>{formatDate(data?.loanEndDate)}</Text>
                         </Text>

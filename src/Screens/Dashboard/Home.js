@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -8,36 +8,53 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather'; // Importing Feather icons for buttons
 import { logo } from '../../Assets';
+import { getLoanStats } from '../../Redux/Slices/loanSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
 
 export default function Home() {
   const navigation = useNavigation();
+  const dispatch = useDispatch()
+
+  const user = useSelector(state => state.auth.user);
+  const loanCount = useSelector(state => state.loans.loanStats);
+
+  useFetchUserFromStorage();
+
+  const aadhaarNumber = user?.aadhaarNumber || user?.aadharCardNo;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(getLoanStats(aadhaarNumber));
+    }, [dispatch])
+  );
 
   // Static data for loan stats
   const loanStats = [
     {
       title: "Loans Given",
-      value: 15,
-      icon: 'arrow-up-circle', // Icon for "Loans Given"
+      value: loanCount?.loansGivenCount || 0,
+      icon: 'arrow-up-circle',
       backgroundColor: '#b80266',
     },
     {
       title: "Loans Taken",
-      value: 5,
-      icon: 'arrow-down-circle', // Icon for "Loans Taken"
+      value: loanCount?.loansTakenCount || 0,
+      icon: 'arrow-down-circle',
       backgroundColor: '#4CAF50',
     },
     {
       title: "Loans Paid",
-      value: 4,
+      value: loanCount?.loansPaidCount || 0,
       icon: 'check-circle',
       backgroundColor: '#2196F3',
     },
     {
       title: "Active Loans",
-      value: 0,
+      value: loanCount?.loansPendingCount || 0,
       icon: 'clock',
       backgroundColor: 'gray',
     },
@@ -146,11 +163,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
     width: '100%',
-    flexWrap: 'wrap',  // Allows the cards to wrap to the next line
+    flexWrap: 'wrap',
     paddingHorizontal: 20,
   },
   statCard: {
-    width: '48%',  // Adjust width to fit two cards per row
+    width: '48%',
     height: 140,
     justifyContent: 'center',
     alignItems: 'center',

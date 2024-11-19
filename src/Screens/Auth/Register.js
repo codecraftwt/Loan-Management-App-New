@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useDispatch } from 'react-redux';
-import { registerUser } from '../../Redux/Slices/authslice';
+import {useDispatch} from 'react-redux';
+import {registerUser} from '../../Redux/Slices/authslice';
 import Toast from 'react-native-toast-message';
 
-export default function Register({ navigation }) {
+export default function Register({navigation}) {
   const [name, setName] = useState('');
   const [aadharNumber, setAadharNumber] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
@@ -23,7 +31,7 @@ export default function Register({ navigation }) {
 
   const dispatch = useDispatch();
 
-  const validateName = (text) => {
+  const validateName = text => {
     setName(text);
     if (text.length < 1) {
       setNameError('Name is required.');
@@ -32,23 +40,27 @@ export default function Register({ navigation }) {
     }
   };
 
-  const validateAadhar = (text) => {
+  const validateAadhar = text => {
     const numericText = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
     if (numericText.length <= 12) {
       setAadharNumber(numericText);
-      setAadharError(numericText.length < 12 ? 'Aadhar number must be 12 digits.' : '');
+      setAadharError(
+        numericText.length < 12 ? 'Aadhar number must be 12 digits.' : '',
+      );
     }
   };
 
-  const validateMobile = (text) => {
+  const validateMobile = text => {
     const numericText = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
     if (numericText.length <= 10) {
       setMobileNumber(numericText);
-      setMobileError(numericText.length < 10 ? 'Mobile number must be 10 digits.' : '');
+      setMobileError(
+        numericText.length < 10 ? 'Mobile number must be 10 digits.' : '',
+      );
     }
   };
 
-  const validateEmail = (text) => {
+  const validateEmail = text => {
     setEmail(text);
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(text)) {
@@ -58,7 +70,7 @@ export default function Register({ navigation }) {
     }
   };
 
-  const validateAddress = (text) => {
+  const validateAddress = text => {
     setAddress(text);
     if (text.length < 1) {
       setAddressError('Address is required.');
@@ -67,7 +79,7 @@ export default function Register({ navigation }) {
     }
   };
 
-  const validatePassword = (text) => {
+  const validatePassword = text => {
     setPassword(text);
     if (text.length < 6) {
       setPasswordError('Password must be at least 6 characters.');
@@ -99,10 +111,11 @@ export default function Register({ navigation }) {
       };
 
       try {
-        console.log(payload, "<-------- payload")
+        console.log(payload, '<-------- payload');
         // Dispatch the registration action
-        await dispatch(registerUser(payload)).unwrap() // Automatically resolves on success or throws on failure
-          .then((response) => {
+        await dispatch(registerUser(payload))
+          .unwrap() // Automatically resolves on success or throws on failure
+          .then(response => {
             // On success, show a success toast and navigate to BottomNavigation
             Toast.show({
               type: 'success',
@@ -110,12 +123,17 @@ export default function Register({ navigation }) {
               text1: 'User registered successfully',
             });
             navigation.navigate('BottomNavigation');
-          })
+          });
 
         // Navigate to Login screen after successful registration
         navigation.navigate('Login');
       } catch (error) {
-        Alert.alert('Registration Failed', error.message || 'Please try again.');
+        console.log(error, 'Error while creating user');
+        Toast.show({
+          type: 'error',
+          position: 'top',
+          text1: error.message || 'Please try again.',
+        });
       }
     } else {
       Alert.alert('Invalid Form', 'Please fill in all fields correctly.');
@@ -146,7 +164,9 @@ export default function Register({ navigation }) {
           value={aadharNumber}
           onChangeText={validateAadhar}
         />
-        {aadharError ? <Text style={styles.errorText}>{aadharError}</Text> : null}
+        {aadharError ? (
+          <Text style={styles.errorText}>{aadharError}</Text>
+        ) : null}
 
         <TextInput
           style={styles.input}
@@ -156,7 +176,9 @@ export default function Register({ navigation }) {
           value={mobileNumber}
           onChangeText={validateMobile}
         />
-        {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
+        {mobileError ? (
+          <Text style={styles.errorText}>{mobileError}</Text>
+        ) : null}
 
         <TextInput
           style={styles.input}
@@ -175,7 +197,9 @@ export default function Register({ navigation }) {
           value={address}
           onChangeText={validateAddress}
         />
-        {addressError ? <Text style={styles.errorText}>{addressError}</Text> : null}
+        {addressError ? (
+          <Text style={styles.errorText}>{addressError}</Text>
+        ) : null}
 
         <View style={styles.passwordContainer}>
           <TextInput
@@ -186,31 +210,30 @@ export default function Register({ navigation }) {
             value={password}
             onChangeText={validatePassword}
           />
-          <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+          <TouchableOpacity
+            onPress={() => setPasswordVisible(!passwordVisible)}>
             <Ionicons
               name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
               size={25}
-              color={'#FFA36C'}
+              color={'#f26fb7'}
               style={styles.icon}
             />
           </TouchableOpacity>
         </View>
-        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
       </View>
 
       <TouchableOpacity
-        style={[styles.registerButton, { opacity: isFormValid() ? 1 : 0.5 }]}
+        style={[styles.registerButton, {opacity: isFormValid() ? 1 : 0.5}]}
         onPress={handleRegister}
-        disabled={!isFormValid()}
-      >
+        disabled={!isFormValid()}>
         <Text style={styles.registerButtonText}>Create Account</Text>
       </TouchableOpacity>
 
       <View style={styles.linksContainer}>
-        <Text
-          style={styles.link}
-          onPress={() => navigation.navigate('Login')}
-        >
+        <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
           Already have an account? Login
         </Text>
       </View>
@@ -244,7 +267,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 60,
-    borderColor: '#FFA36C',
+    borderColor: '#f26fb7',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
@@ -254,20 +277,20 @@ const styles = StyleSheet.create({
     color: '#333333',
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#FFA36C',
+    borderColor: '#f26fb7',
     borderWidth: 1,
     borderRadius: 8,
     height: 60,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },

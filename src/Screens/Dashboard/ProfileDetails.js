@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Alert,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PromptBox from '../PromptBox.js/Prompt';
-import { logout, updateUser } from '../../Redux/Slices/authslice';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  logout,
+  updateUser,
+  updateUserProfile,
+} from '../../Redux/Slices/authslice';
+import {useDispatch, useSelector} from 'react-redux';
 import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
 import Toast from 'react-native-toast-message';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 
-const ProfileDetails = ({ route, navigation }) => {
+const ProfileDetails = ({route, navigation}) => {
   // const { profileData } = route.params;
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const profileData = useSelector(state => state.auth.user);
 
@@ -28,6 +41,60 @@ const ProfileDetails = ({ route, navigation }) => {
     email: profileData?.email,
     address: profileData?.address,
   });
+
+  const [profileImage, setProfileImage] = useState(
+    profileData?.profileImage || null,
+  );
+
+  // Handle profile image change
+  const handleChangeProfileImage = () => {
+    Alert.alert('Change Profile Picture', 'Choose an option', [
+      {text: 'Camera', onPress: openCamera},
+      {text: 'Gallery', onPress: openGallery},
+      {text: 'Cancel', style: 'cancel'},
+    ]);
+  };
+
+  const openCamera = () => {
+    launchCamera(
+      {mediaType: 'photo', cameraType: 'front', quality: 1, saveToPhotos: true},
+      response => handleImageResponse(response),
+    );
+  };
+
+  const openGallery = () => {
+    launchImageLibrary({mediaType: 'photo', quality: 1}, response =>
+      handleImageResponse(response),
+    );
+  };
+
+  const handleImageResponse = response => {
+    if (response.didCancel) {
+      console.log('User canceled image picker');
+    } else if (response.errorCode) {
+      console.error(response.errorMessage);
+    } else {
+      const source = {uri: response.assets[0].uri};
+      setProfileImage(source);
+      const fileData = response.assets[0];
+      dispatch(updateUserProfile(fileData))
+        .unwrap()
+        .then(() => {
+          Toast.show({
+            type: 'success',
+            position: 'top',
+            text1: 'Profile Image Updated Successfully',
+          });
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'error',
+            position: 'top',
+            text1: error.message || 'Profile Update Failed',
+          });
+        });
+    }
+  };
 
   const handleLogout = () => {
     setIsPromptVisible(true);
@@ -48,13 +115,12 @@ const ProfileDetails = ({ route, navigation }) => {
 
   // Toggle between edit and view mode
   const toggleEditMode = () => {
-    setIsEditing((prevState) => !prevState);
+    setIsEditing(prevState => !prevState);
   };
 
   // Handle save changes
   const handleSaveChanges = async () => {
     try {
-
       const response = await dispatch(updateUser(editedData)).unwrap();
       setIsEditing(false);
 
@@ -63,10 +129,7 @@ const ProfileDetails = ({ route, navigation }) => {
         position: 'top',
         text1: response.messsage || 'Profile Edited Successfully',
       });
-
-
     } catch (error) {
-
       Toast.show({
         type: 'error',
         position: 'top',
@@ -75,7 +138,6 @@ const ProfileDetails = ({ route, navigation }) => {
       });
     }
   };
-
 
   return (
     <>
@@ -95,12 +157,21 @@ const ProfileDetails = ({ route, navigation }) => {
       {/* Profile Details */}
       <ScrollView style={styles.container}>
         <View style={styles.profileInfo}>
-          <Icon
-            name="user"
-            size={50}
-            color="#b80266"
-            style={styles.profileIcon}
-          />
+          {/* Profile Image */}
+          <TouchableOpacity onPress={handleChangeProfileImage}>
+            <View style={styles.profileImageContainer}>
+              {profileImage ? (
+                <Image source={profileImage} style={styles.profileImage} />
+              ) : (
+                <Icon
+                  name="user"
+                  size={50}
+                  color="#b80266"
+                  // style={styles.profileIcon}
+                />
+              )}
+            </View>
+          </TouchableOpacity>
           <Text style={styles.detailTextName}>{profileData?.userName}</Text>
         </View>
 
@@ -113,7 +184,9 @@ const ProfileDetails = ({ route, navigation }) => {
               <TextInput
                 style={styles.input}
                 value={editedData.userName}
-                onChangeText={(text) => setEditedData({ ...editedData, userName: text })}
+                onChangeText={text =>
+                  setEditedData({...editedData, userName: text})
+                }
               />
             ) : (
               <Text style={styles.detailText}>{profileData?.userName}</Text>
@@ -132,7 +205,9 @@ const ProfileDetails = ({ route, navigation }) => {
               <TextInput
                 style={styles.input}
                 value={editedData.mobileNo}
-                onChangeText={(text) => setEditedData({ ...editedData, mobileNo: text })}
+                onChangeText={text =>
+                  setEditedData({...editedData, mobileNo: text})
+                }
                 keyboardType="phone-pad"
               />
             ) : (
@@ -145,14 +220,21 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Editable Email Field */}
         <View style={styles.row}>
-          <Icon name="message-square" size={28} color="#b80266" style={styles.icon} />
+          <Icon
+            name="message-square"
+            size={28}
+            color="#b80266"
+            style={styles.icon}
+          />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Email</Text>
             {isEditing ? (
               <TextInput
                 style={styles.input}
                 value={editedData.email}
-                onChangeText={(text) => setEditedData({ ...editedData, email: text })}
+                onChangeText={text =>
+                  setEditedData({...editedData, email: text})
+                }
               />
             ) : (
               <Text style={styles.detailText}>{profileData?.email}</Text>
@@ -164,7 +246,12 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Non-editable Aadhaar Number */}
         <View style={styles.row}>
-          <Icon name="credit-card" size={28} color="#b80266" style={styles.icon} />
+          <Icon
+            name="credit-card"
+            size={28}
+            color="#b80266"
+            style={styles.icon}
+          />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Aadhar Card No</Text>
             <Text style={styles.detailText}>{profileData?.aadharCardNo}</Text>
@@ -182,7 +269,9 @@ const ProfileDetails = ({ route, navigation }) => {
               <TextInput
                 style={styles.input}
                 value={editedData.address}
-                onChangeText={(text) => setEditedData({ ...editedData, address: text })}
+                onChangeText={text =>
+                  setEditedData({...editedData, address: text})
+                }
               />
             ) : (
               <Text style={styles.detailText}>{profileData?.address}</Text>
@@ -193,16 +282,13 @@ const ProfileDetails = ({ route, navigation }) => {
         <View style={styles.hrLine} />
 
         {/* Edit/Save Button */}
-        {
-          isEditing && (
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={handleSaveChanges}>
-              <Text style={styles.editButtonText}>Save</Text>
-            </TouchableOpacity>
-          )
-        }
-
+        {isEditing && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={handleSaveChanges}>
+            <Text style={styles.editButtonText}>Save</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
@@ -228,10 +314,46 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
+  profileInfo: {
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#b80266',
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    marginHorizontal: 16,
+  },
+  profileImageContainer: {
+    marginBottom: 10,
+    borderRadius: 50,
+    overflow: 'hidden',
+    width: 90,
+    height: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 50,
+  },
+  profileIcon: {
+    backgroundColor: '#FFA36C',
+    padding: 15,
+    borderRadius: 40,
+  },
   editIcon: {
     position: 'absolute',
     right: 20,
-    top: 30
+    top: 30,
   },
   input: {
     height: 40,
@@ -270,7 +392,7 @@ const styles = StyleSheet.create({
   hrLine: {
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
-    marginBottom: 10
+    marginBottom: 10,
   },
   profileInfo: {
     alignItems: 'center',
@@ -280,7 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -329,7 +451,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
     color: '#333333',
-    paddingBlock: 3
+    paddingBlock: 3,
   },
   row: {
     flexDirection: 'row',

@@ -1,164 +1,352 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../../Utils/AxiosInstance';
 
 // Thunk for user login
-export const login = createAsyncThunk('auth/signin', async ({ emailOrMobile, password }, { rejectWithValue }) => {
+export const login = createAsyncThunk(
+  'auth/signin',
+  async ({emailOrMobile, password}, {rejectWithValue}) => {
     try {
-        const response = await instance.post('auth/signin', { emailOrMobile, password });
+      const response = await instance.post('auth/signin', {
+        emailOrMobile,
+        password,
+      });
 
-        // Destructure user data and token from the response
-        const { token, _id, email, userName, mobileNo, address, aadharCardNo } = response.data;
+      // Destructure user data and token from the response
+      const {token, _id, email, userName, mobileNo, address, aadharCardNo} =
+        response.data;
 
-        // If token and user info are present, save to AsyncStorage
-        if (token && _id) {
-            await AsyncStorage.setItem('token', token);
-            await AsyncStorage.setItem('user', JSON.stringify({ _id, email, userName, mobileNo, address, aadharCardNo }));
-            return { token, _id, email, userName, mobileNo, address, aadharCardNo };
-        } else {
-            return rejectWithValue('Invalid credentials');  // Handle invalid response data
-        }
+      // If token and user info are present, save to AsyncStorage
+      if (token && _id) {
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem(
+          'user',
+          JSON.stringify({
+            _id,
+            email,
+            userName,
+            mobileNo,
+            address,
+            aadharCardNo,
+          }),
+        );
+        return {token, _id, email, userName, mobileNo, address, aadharCardNo};
+      } else {
+        return rejectWithValue('Invalid credentials'); // Handle invalid response data
+      }
     } catch (error) {
-        // If there is a network issue or other API issues, capture the error and pass it to rejectWithValue
-        console.error('Login error:', error.response.data.message);
-        if (error.response || error.response.data || error.response.data.message) {
-            return rejectWithValue(error.response.data.message);
-        } else {
-            return rejectWithValue('Network error, please try again later.');  // Fallback error message
-        }
+      // If there is a network issue or other API issues, capture the error and pass it to rejectWithValue
+      console.error('Login error:', error.response.data.message);
+      if (
+        error.response ||
+        error.response.data ||
+        error.response.data.message
+      ) {
+        return rejectWithValue(error.response.data.message);
+      } else {
+        return rejectWithValue('Network error, please try again later.'); // Fallback error message
+      }
     }
-});
+  },
+);
 
 // Thunk for user registration
 export const registerUser = createAsyncThunk(
-    'auth/signup',
-    async (userData, { rejectWithValue }) => {
-        try {
-            const response = await instance.post('auth/signup', userData);
-            console.log(response.data, "Success")
-            return response.data;
-        } catch (error) {
-            console.log(error, "error")
-            return rejectWithValue(error.response.data);
-        }
+  'auth/signup',
+  async (userData, {rejectWithValue}) => {
+    try {
+      const response = await instance.post('auth/signup', userData);
+      console.log(response.data, 'Success');
+      return response.data;
+    } catch (error) {
+      console.log(error, 'error');
+      return rejectWithValue(error.response.data);
     }
+  },
 );
 
 export const updateUser = createAsyncThunk(
-    'user/update-profile',
-    async (userData, { rejectWithValue }) => {
-        try {
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
-                return rejectWithValue('User is not authenticated');
-            }
+  'user/update-user',
+  async (userData, {rejectWithValue}) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        return rejectWithValue('User is not authenticated');
+      }
 
-            const response = await instance.patch('user/update-profile',
-                {
-                    userData
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Cache-Control': 'no-cache',
-                    }
-                }
-
-            );
-            console.log(response.data, "Success")
-            return response.data;
-        } catch (error) {
-            console.log(error, "error")
-            return rejectWithValue(error.response ? error.response.data : error.message);
-        }
+      const response = await instance.patch(
+        'user/update-profile',
+        {
+          userData,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Cache-Control': 'no-cache',
+          },
+        },
+      );
+      console.log(response.data, 'Success');
+      return response.data;
+    } catch (error) {
+      console.log(error, 'error');
+      return rejectWithValue(
+        error.response ? error.response.data : error.message,
+      );
     }
+  },
+);
+
+// Thunk for Update user profile
+export const updateUserProfile = createAsyncThunk(
+  'user/update-profile', // Action type
+  async (file, {rejectWithValue, getState}) => {
+    try {
+      // Dynamically extract file metadata (e.g., URI, name, and type)
+      const fileUri = file.uri;
+      const fileName = file.name || fileUri.split('/').pop(); // Use file name from the picker or URI
+      const fileExtension = fileName.split('.').pop().toLowerCase(); // Get file extension
+
+      // Determine the MIME type dynamically based on the extension
+      let mimeType = 'application/octet-stream'; // Default MIME type
+      if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+        mimeType = 'image/jpeg';
+      } else if (fileExtension === 'png') {
+        mimeType = 'image/png';
+      } else if (fileExtension === 'gif') {
+        mimeType = 'image/gif';
+      }
+
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('file', {
+        uri: fileUri,
+        name: fileName,
+        type: mimeType,
+      });
+
+      // Get the authentication token (assumed to be in state)
+      const {token} = getState().auth; // You might need to adjust based on your state structure
+
+      // Make the API request to upload the image
+      const response = await instance.post(
+        'user/uploadProfileImage',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data', // Important for file uploads
+          },
+        },
+      );
+
+      // Return the response data on success
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
+
+      // Return the error message in case of failure
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'An error occurred. Please try again later.', // Default fallback error message
+      );
+    }
+  },
+);
+
+export const forgotPassword = createAsyncThunk(
+  'auth/forgot-password',
+  async (email, {rejectWithValue}) => {
+    try {
+      const response = await instance.post('auth/forgot-password', {email});
+      return response.data; // Success response, typically a message like "OTP sent"
+    } catch (error) {
+      console.error('Forgot Password error:', error);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'An error occurred. Please try again later.',
+      );
+    }
+  },
+);
+
+export const verifyOtp = createAsyncThunk(
+  'auth/verify-otp',
+  async (data, {rejectWithValue}) => {
+    try {
+      const response = await instance.post('auth/verify-otp', data);
+      return response.data;
+    } catch (error) {
+      console.error('Verify OTP error:', error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'An error occurred. Please try again later.',
+      );
+    }
+  },
+);
+
+// Thunk for resetting password
+export const resetPassword = createAsyncThunk(
+  'auth/reset-password',
+  async ({email, otp, newPassword}, {rejectWithValue}) => {
+    try {
+      const response = await instance.post('auth/reset-password', {
+        email,
+        otp,
+        newPassword,
+      });
+      return response.data; // Success response, typically a success message
+    } catch (error) {
+      console.error('Reset Password error:', error);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'An error occurred. Please try again later.',
+      );
+    }
+  },
 );
 
 // Authentication slice
 const authSlice = createSlice({
-    name: 'auth',
-    initialState: {
-        user: null,
-        token: null,
-        error: null,
-        isLoading: false,
+  name: 'auth',
+  initialState: {
+    user: null,
+    token: null,
+    error: null,
+    isLoading: false,
+    forgotPasswordMessage: null, // For storing success message from forgot-password
+    resetPasswordMessage: null,
+  },
+  reducers: {
+    logout: state => {
+      state.user = null;
+      state.token = null;
+      state.error = null;
+      AsyncStorage.removeItem('token');
+      AsyncStorage.removeItem('user');
     },
-    reducers: {
-        logout: (state) => {
-            state.user = null;
-            state.token = null;
-            state.error = null;
-            AsyncStorage.removeItem('token');
-            AsyncStorage.removeItem('user');
-        },
 
-        setUser: (state, action) => {
-            state.user = action.payload;
-            state.token = action.payload.token;
-        },
+    setUser: (state, action) => {
+      state.user = action.payload;
+      state.token = action.payload.token;
     },
-    extraReducers: (builder) => {
-        builder
-            // Login reducers
-            .addCase(login.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(login.fulfilled, (state, action) => {
-                state.isLoading = false;
-                if (action.payload.token) {
-                    state.user = action.payload;
-                    state.token = action.payload.token;
-                } else {
-                    state.error = 'Invalid email or password';
-                }
-            })
-            .addCase(login.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.payload || 'Check your connection or try again later.';
-            })
+  },
+  extraReducers: builder => {
+    builder
+      // Login reducers
+      .addCase(login.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.token) {
+          state.user = action.payload;
+          state.token = action.payload.token;
+        } else {
+          state.error = 'Invalid email or password';
+        }
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Check your connection or try again later.';
+      })
 
-            // Register reducers
-            .addCase(registerUser.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(registerUser.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.user = action.payload.user;
-            })
-            .addCase(registerUser.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.payload || 'Registration failed. Please try again.';
-                console.error(action.error.message);
-            })
+      // Register reducers
+      .addCase(registerUser.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Registration failed. Please try again.';
+        console.error(action.error.message);
+      })
 
-            // Update Profile reducers
-            .addCase(updateUser.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(updateUser.fulfilled, (state, action) => {
-                state.isLoading = false;
-                if (action.payload) {
-                    // Update user data in the state
-                    state.user = action.payload.user || action.payload;
-                    console.log("user 2", action.payload.user)
-                } else {
-                    state.error = 'Failed to update profile';
-                }
-            })
-            .addCase(updateUser.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.payload || 'Failed to update profile. Please try again later.';
-            });
+      // Update Profile reducers
+      .addCase(updateUser.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          // Update user data in the state
+          state.user = action.payload.user || action.payload;
+          console.log('user 2', action.payload.user);
+        } else {
+          state.error = 'Failed to update profile';
+        }
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Failed to update profile. Please try again later.';
+      })
 
+      // Forgot Password reducers
+      .addCase(forgotPassword.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+        state.forgotPasswordMessage = null; // Reset the message when starting the request
+      })
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.forgotPasswordMessage = action.payload.message; // Store success message from the API response
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Error sending OTP. Please try again later.';
+        state.forgotPasswordMessage = null;
+      })
 
+      // Reset Password reducers
+      .addCase(resetPassword.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+        state.resetPasswordMessage = null; // Reset the message when starting the request
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.resetPasswordMessage = action.payload.message; // Store success message from the API response
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Error resetting password. Please try again later.';
+      })
 
-    },
+      .addCase(updateUserProfile.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          // Update user data in the state
+          state.user = action.payload.user || action.payload;
+          console.log('user profile', action.payload.user);
+        } else {
+          state.error = 'Failed to update profile';
+        }
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload || 'Failed to update profile. Please try again later.';
+      });
+  },
 });
 
 // Export the logout action if needed
-export const { logout, setUser } = authSlice.actions;
+export const {logout, setUser} = authSlice.actions;
 
 export default authSlice.reducer;

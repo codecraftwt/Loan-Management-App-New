@@ -8,8 +8,9 @@ const initialState = {
     lenderLoans: [],
     myLoans: [],
     lenderTotalAmount: 0,
+    loanStats: [],
     loading: false,
-    error: null, // Error state starts as null
+    error: null,
 };
 
 // Thunks for various actions
@@ -109,6 +110,22 @@ export const updateLoan = createAsyncThunk('loans/updateLoan', async (loanData) 
     const response = await instance.patch(`loan/${loanData.id}`, loanData);
     return response.data;
 });
+
+export const getLoanStats = createAsyncThunk(
+    'loans/getLoanStats',
+    async (aadhaarNumber, { rejectWithValue }) => {
+        try {
+            const response = await instance.get('loan/loan-stats', {
+                params: { aadhaarNumber },
+            });
+
+            return response.data;
+        } catch (error) {
+            console.log(error.response?.data || error.message);
+            return rejectWithValue(error.response?.data || error.message || 'Unknown error');
+        }
+    }
+);
 
 const loanSlice = createSlice({
     name: 'loans',
@@ -215,6 +232,21 @@ const loanSlice = createSlice({
             .addCase(updateLoan.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || action.error?.message || 'Error updating loan';
+            })
+
+            // Handling getLoanStats
+            .addCase(getLoanStats.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getLoanStats.fulfilled, (state, action) => {
+                state.loading = false;
+                state.loanStats = action.payload.data;
+                state.error = null;
+            })
+            .addCase(getLoanStats.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || action.error?.message || 'Error fetching loan stats';
             });
     },
 });

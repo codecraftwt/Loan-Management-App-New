@@ -1,16 +1,27 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useDispatch, useSelector } from 'react-redux';
-import { getLoanByLender, updateLoanStatus } from '../../Redux/Slices/loanSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {getLoanByLender, updateLoanStatus} from '../../Redux/Slices/loanSlice';
 import moment from 'moment';
-import { logo } from '../../Assets';
+import {logo} from '../../Assets';
+import PromptBox from '../PromptBox.js/Prompt';
 
-export default function Outward({ navigation }) {
+export default function Outward({navigation}) {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
-  const { lenderLoans, loading, error } = useSelector(state => state.loans);
-
+  const {lenderLoans, loading, error} = useSelector(state => state.loans);
+  const [isPromptVisible, setIsPromptVisible] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState(null);
 
   useEffect(() => {
     dispatch(getLoanByLender());
@@ -18,14 +29,26 @@ export default function Outward({ navigation }) {
 
   // Filter the loans based on the search query
   const filteredLoans = lenderLoans?.filter(loan =>
-    loan?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    loan?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const formatDate = (date) => moment(date).format('DD-MM-YYYY');
+  const formatDate = date => moment(date).format('DD-MM-YYYY');
 
-  const handleStatusUpdate = (loanId, currentStatus) => {
-    const newStatus = currentStatus === 'pending' ? 'paid' : 'pending';
-    dispatch(updateLoanStatus({ loanId, status: newStatus }));
+  // Show the prompt when updating the status
+  const handleStatusUpdate = loan => {
+    setSelectedLoan(loan);
+    setIsPromptVisible(true);
+  };
+
+  const handleConfirm = () => {
+    const newStatus = selectedLoan.status === 'pending' ? 'paid' : 'pending';
+    dispatch(updateLoanStatus({loanId: selectedLoan._id, status: newStatus}));
+    setIsPromptVisible(false);
+  };
+
+  const handleCancel = () => {
+    setSelectedLoan(null);
+    setIsPromptVisible(false);
   };
 
   return (
@@ -48,10 +71,7 @@ export default function Outward({ navigation }) {
       {/* Plus Button */}
       <TouchableOpacity
         style={styles.plusButton}
-        onPress={() =>
-          navigation.navigate('AddDetails', {})
-        }
-      >
+        onPress={() => navigation.navigate('AddDetails', {})}>
         <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
 
@@ -62,46 +82,62 @@ export default function Outward({ navigation }) {
 
       {/* Loan List */}
       <ScrollView style={styles.nameListContainer}>
-        {filteredLoans?.length === 0 ? (
+        {loading === false && filteredLoans?.length === 0 ? (
           <Text style={styles.emptyText}>No loans found</Text>
         ) : (
           filteredLoans?.map((loan, index) => (
             <TouchableOpacity
               key={index}
               onPress={() =>
-                navigation.navigate('LoanDetailScreen', { loanDetails: loan, isEdit: true })
-              }
-            >
+                navigation.navigate('LoanDetailScreen', {
+                  loanDetails: loan,
+                  isEdit: true,
+                })
+              }>
               <View style={styles.dataCard}>
                 <View style={styles.dataContainer}>
-                  <Icon
+                  {/* <Icon
                     name="account-circle"
                     size={35}
                     color="#b80266"
                     style={styles.userIcon}
+                  /> */}
+                  <Image
+                    source={{
+                      uri: 'https://img.freepik.com/free-photo/close-up-portrait-curly-handsome-european-male_176532-8133.jpg?t=st=1732015990~exp=1732019590~hmac=e9301da31fe2e3d909561780714453379b5fccda6abaf92529fbefd4afb04dcc&w=1060',
+                    }}
+                    style={styles.userImage}
                   />
                   <View style={styles.textContainer}>
                     <Text style={styles.dataLabel}>
-                      Full Name: <Text style={styles.dataText}>{loan.name}</Text>
+                      Full Name:{' '}
+                      <Text style={styles.dataText}>{loan.name}</Text>
                     </Text>
                     <Text style={styles.dataLabel}>
-                      Loan Amount: <Text style={styles.dataText}>{loan.amount} Rs</Text>
+                      Loan Amount:{' '}
+                      <Text style={styles.dataText}>{loan.amount} Rs</Text>
                     </Text>
                     <Text style={styles.dataLabel}>
                       Status: <Text style={styles.dataText}>{loan.status}</Text>
                     </Text>
                     <Text style={styles.dataLabel}>
-                      Loan End Date: <Text style={styles.dataText}>{formatDate(loan.loanEndDate)}</Text>
+                      Loan End Date:{' '}
+                      <Text style={styles.dataText}>
+                        {formatDate(loan.loanEndDate)}
+                      </Text>
                     </Text>
                   </View>
 
                   {/* Status Update Icon */}
                   <TouchableOpacity
                     style={styles.statusUpdateButton}
-                    onPress={() => handleStatusUpdate(loan._id, loan.status)}
-                  >
+                    onPress={() => handleStatusUpdate(loan)}>
                     <Icon
-                      name={loan.status === 'pending' ? 'radio-button-unchecked' : 'check-box'}
+                      name={
+                        loan.status === 'pending'
+                          ? 'radio-button-unchecked'
+                          : 'check-box'
+                      }
                       size={28}
                       color={loan.status === 'pending' ? '#b80266' : '#4CAF50'}
                     />
@@ -112,6 +148,16 @@ export default function Outward({ navigation }) {
           ))
         )}
       </ScrollView>
+
+      {/* Prompt Box for Status Change */}
+      <PromptBox
+        visible={isPromptVisible}
+        message={`Are you sure you want to change the status to ${
+          selectedLoan?.status === 'pending' ? 'paid' : 'pending'
+        }?`}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </View>
   );
 }
@@ -164,7 +210,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 4,
@@ -204,6 +250,11 @@ const styles = StyleSheet.create({
   },
   userIcon: {
     marginHorizontal: 10,
+  },
+  userImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 60,
   },
   dataLabel: {
     fontSize: 14,

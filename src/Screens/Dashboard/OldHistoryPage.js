@@ -52,27 +52,31 @@ const OldHistoryPage = ({ route, navigation }) => {
         <Text style={styles.headerText}>Old History Details</Text>
       </View>
 
-      {
-        error ? (
-          <Text style={styles.emptyText}>{error.message}</Text>
-        ) : (
-          <View style={styles.container}>
-            <View style={styles.profileInfo}>
-              <Icon
-                name="user"
-                size={50}
-                color="#b80266"
-                style={styles.profileIcon}
-              />
-              <Text style={styles.detailTextName}>{borrower?.name}</Text>
-              <Text style={styles.aadharHeading}>Aadhar No: {aadharNo || borrower?.aadhaarNumber}</Text>
-              <Text style={styles.detailText}>Mobile: {borrower?.mobileNumber}</Text>
-              <Text style={styles.detailText}>Address: {borrower?.address}</Text>
-            </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-            <Text style={styles.totalAmountText}>Total Loan Amount: {totalAmount} Rs</Text>
+        {
+          error ? (
+            <Text style={styles.emptyText}>{error.message}</Text>
+          ) : (
+            <View style={styles.container}>
+              <View style={styles.profileInfo}>
+                <Icon
+                  name="user"
+                  size={50}
+                  color="#b80266"
+                  style={styles.profileIcon}
+                />
+                <Text style={styles.detailTextName}>{borrower?.name}</Text>
+                <Text style={styles.aadharHeading}>Aadhar No: {aadharNo || borrower?.aadhaarNumber}</Text>
+                <Text style={styles.detailText}>Mobile: {borrower?.mobileNumber}</Text>
+                <Text style={styles.detailText}>Address: {borrower?.address}</Text>
+              </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+
+
+              <Text style={styles.totalAmountText}>Total Loan Amount: {totalAmount} Rs</Text>
+
+
               {/* Render Loan details */}
               {loans && loans.map((loan, index) => (
                 <View key={loan._id} style={styles.loanItem}>
@@ -110,10 +114,11 @@ const OldHistoryPage = ({ route, navigation }) => {
                   )}
                 </View>
               ))}
-            </ScrollView>
-          </View>
-        )
-      }
+            </View>
+
+          )
+        }
+      </ScrollView>
 
     </>
   );
@@ -123,7 +128,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f5f5f5',
   },
   headerBar: {
     backgroundColor: '#b80266',
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 20,
     backgroundColor: '#b80266',
     paddingVertical: 20,
     paddingHorizontal: 25,
@@ -158,7 +163,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    marginHorizontal: 16,
   },
   profileIcon: {
     backgroundColor: '#FFA36C',
@@ -172,8 +176,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     color: '#b80266',
     padding: 10,
-    paddingHorizontal: 18,
-    margin: 5,
+    paddingHorizontal: 30,
+    margin: 8,
     borderRadius: 10,
   },
   detailTextName: {
