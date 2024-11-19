@@ -1,17 +1,45 @@
-import React, {useEffect} from 'react';
-import {View, Text, Image, StyleSheet, StatusBar} from 'react-native';
-import {logo} from '../../Assets';
+import React, { useEffect } from 'react';
+import { View, Text, Image, StyleSheet, StatusBar } from 'react-native';
+import { logo } from '../../Assets';
+import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUser } from '../../Redux/Slices/authslice';
 
-export default function SplashScreen({navigation}) {
+export default function SplashScreen({ navigation }) {
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          const user = await AsyncStorage.getItem('user');
+          if (user) {
+            dispatch(setUser(JSON.parse(user)));
+          }
+          // Navigate to the home screen
+          navigation.replace('BottomNavigation');
+        } else {
+          // Token not found, user is not logged in, navigate to login screen
+          navigation.replace('Login');
+        }
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        navigation.replace('Login');
+      }
+    };
+
+
     setTimeout(() => {
-      navigation.replace('Login');
+      checkLoginStatus();
     }, 2000);
-  }, [navigation]);
+  }, [dispatch, navigation]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
+      <StatusBar barStyle="light-content" backgroundColor="#b80266" />
       <Image resizeMode="contain" style={styles.logo} source={logo} />
       <Text style={styles.welcomeText}>Manage Your Loans </Text>
     </View>
@@ -21,7 +49,7 @@ export default function SplashScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     justifyContent: 'center',
     alignItems: 'center',
   },

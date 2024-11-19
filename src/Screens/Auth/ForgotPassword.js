@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 
-export default function ForgotPassword({navigation}) {
+export default function ForgotPassword({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState('');
   const [mobileError, setMobileError] = useState('');
 
@@ -45,7 +45,7 @@ export default function ForgotPassword({navigation}) {
       {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
 
       <TouchableOpacity
-        style={[styles.continueButton, {opacity: isFormValid() ? 1 : 0.5}]}
+        style={[styles.continueButton, { opacity: isFormValid() ? 1 : 0.5 }]}
         onPress={() => {
           if (isFormValid()) {
             navigation.navigate('OTP');
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 28,
-    color: '#FF6B35',
+    color: '#b80266',
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
     marginBottom: 20,
@@ -93,12 +93,12 @@ const styles = StyleSheet.create({
     color: '#333333',
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   continueButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',

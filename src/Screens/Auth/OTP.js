@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 
-export default function OTP({navigation}) {
+export default function OTP({ navigation }) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef([]);
 
@@ -63,7 +63,7 @@ export default function OTP({navigation}) {
       <TouchableOpacity
         style={[
           styles.verifyButton,
-          {opacity: otp.some(d => d === '') ? 0.5 : 1},
+          { opacity: otp.some(d => d === '') ? 0.5 : 1 },
         ]}
         onPress={handleVerify}
         disabled={otp.some(d => d === '')}>
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 28,
-    color: '#FF6B35',
+    color: '#b80266',
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
     marginBottom: 20,
@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
     color: '#333333',
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   verifyButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',

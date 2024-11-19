@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-export default function CreatePass({navigation}) {
+export default function CreatePass({ navigation }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -87,7 +87,7 @@ export default function CreatePass({navigation}) {
       </View>
 
       <TouchableOpacity
-        style={[styles.applyButton, {opacity: isButtonDisabled ? 0.5 : 1}]}
+        style={[styles.applyButton, { opacity: isButtonDisabled ? 0.5 : 1 }]}
         onPress={handleApply}
         disabled={isButtonDisabled}>
         <Text style={styles.applyButtonText}>Apply</Text>
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 28,
-    color: '#FF6B35',
+    color: '#b80266',
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
     marginBottom: 20,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   applyButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',

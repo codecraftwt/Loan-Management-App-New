@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
-import {View, TextInput, FlatList, Text, StyleSheet} from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, FlatList, Text, StyleSheet } from 'react-native';
 
 const lenders = [
-  {id: '1', name: 'Alice', loanAmount: 50000, interestRate: 10, duration: 12},
-  {id: '2', name: 'Bob', loanAmount: 100000, interestRate: 9, duration: 24},
-  {id: '3', name: 'Charlie', loanAmount: 20000, interestRate: 15, duration: 6},
+  { id: '1', name: 'Alice', loanAmount: 50000, interestRate: 10, duration: 12 },
+  { id: '2', name: 'Bob', loanAmount: 100000, interestRate: 9, duration: 24 },
+  { id: '3', name: 'Charlie', loanAmount: 20000, interestRate: 15, duration: 6 },
 ];
 
 const SearchLenders = () => {
@@ -34,7 +34,7 @@ const SearchLenders = () => {
       <FlatList
         data={filteredLenders}
         keyExtractor={item => item.id}
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardText}>Loan Amount: ₹{item.loanAmount}</Text>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,

@@ -27,33 +27,33 @@ export default function SettingsScreen() {
       {/* Settings Options */}
       <View style={styles.settingsOptions}>
         <TouchableOpacity style={styles.option}>
-          <Icon name="user" size={24} color="#FF6B35" />
+          <Icon name="user" size={24} color="#b80266" />
           <Text style={styles.optionText}>Profile</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option}>
-          <Icon name="bell" size={24} color="#FF6B35" />
+          <Icon name="bell" size={24} color="#b80266" />
           <Text style={styles.optionText}>Notifications</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option}>
-          <Icon name="shield" size={24} color="#FF6B35" />
+          <Icon name="shield" size={24} color="#b80266" />
           <Text style={styles.optionText}>Privacy</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option}>
-          <Icon name="credit-card" size={24} color="#FF6B35" />
+          <Icon name="credit-card" size={24} color="#b80266" />
           <Text style={styles.optionText}>Payment Methods</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option}>
-          <Icon name="settings" size={24} color="#FF6B35" />
+          <Icon name="settings" size={24} color="#b80266" />
           <Text style={styles.optionText}>App Preferences</Text>
         </TouchableOpacity>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
-          <Icon name="log-out" size={24} color="#FF6B35" />
+          <Icon name="log-out" size={24} color="#b80266" />
           <Text style={styles.logOutText}>Logout</Text>
         </TouchableOpacity>
       </View>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   logOutText: {
     fontSize: 16,
-    color: '#FF6B35',
+    color: '#b80266',
     marginLeft: 10,
   },
   backButton: {

@@ -70,7 +70,7 @@ export default function Profile() {
           <Icon
             name="user"
             size={60}
-            color="#FF6B35"
+            color="#b80266"
             style={styles.profileIcon}
           />
           {/* Displaying user data*/}
@@ -80,7 +80,7 @@ export default function Profile() {
               <Text style={styles.profileEmail}>{user.email}</Text>
             </>
           ) : (
-            <ActivityIndicator size="small" color="#FF6B35" />
+            <ActivityIndicator size="small" color="#b80266" />
           )}
         </View>
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     justifyContent: 'center',
     alignItems: 'center',
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   logoutButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     paddingVertical: 12,
     marginHorizontal: 40,

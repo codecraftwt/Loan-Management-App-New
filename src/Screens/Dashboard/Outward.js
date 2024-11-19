@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import { getLoanByLender } from '../../Redux/Slices/loanSlice';
+import { getLoanByLender, updateLoanStatus } from '../../Redux/Slices/loanSlice';
 import moment from 'moment';
 import { logo } from '../../Assets';
 
@@ -11,16 +11,22 @@ export default function Outward({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { lenderLoans, loading, error } = useSelector(state => state.loans);
 
+
   useEffect(() => {
     dispatch(getLoanByLender());
   }, [dispatch]);
 
   // Filter the loans based on the search query
   const filteredLoans = lenderLoans?.filter(loan =>
-    loan.name.toLowerCase().includes(searchQuery.toLowerCase())
+    loan?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatDate = (date) => moment(date).format('DD-MM-YYYY');
+
+  const handleStatusUpdate = (loanId, currentStatus) => {
+    const newStatus = currentStatus === 'pending' ? 'paid' : 'pending';
+    dispatch(updateLoanStatus({ loanId, status: newStatus }));
+  };
 
   return (
     <View style={styles.container}>
@@ -43,8 +49,7 @@ export default function Outward({ navigation }) {
       <TouchableOpacity
         style={styles.plusButton}
         onPress={() =>
-          navigation.navigate('AddDetails', {
-          })
+          navigation.navigate('AddDetails', {})
         }
       >
         <Text style={styles.plusButtonText}>+</Text>
@@ -52,7 +57,7 @@ export default function Outward({ navigation }) {
 
       {/* Loading Indicator */}
       {loading && (
-        <ActivityIndicator size="large" color="#FF6B35" style={styles.loader} />
+        <ActivityIndicator size="large" color="#b80266" style={styles.loader} />
       )}
 
       {/* Loan List */}
@@ -70,9 +75,9 @@ export default function Outward({ navigation }) {
               <View style={styles.dataCard}>
                 <View style={styles.dataContainer}>
                   <Icon
-                    name="user"
-                    size={30}
-                    color="#FF6B35"
+                    name="account-circle"
+                    size={35}
+                    color="#b80266"
                     style={styles.userIcon}
                   />
                   <View style={styles.textContainer}>
@@ -89,6 +94,18 @@ export default function Outward({ navigation }) {
                       Loan End Date: <Text style={styles.dataText}>{formatDate(loan.loanEndDate)}</Text>
                     </Text>
                   </View>
+
+                  {/* Status Update Icon */}
+                  <TouchableOpacity
+                    style={styles.statusUpdateButton}
+                    onPress={() => handleStatusUpdate(loan._id, loan.status)}
+                  >
+                    <Icon
+                      name={loan.status === 'pending' ? 'radio-button-unchecked' : 'check-box'}
+                      size={28}
+                      color={loan.status === 'pending' ? '#b80266' : '#4CAF50'}
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             </TouchableOpacity>
@@ -107,9 +124,10 @@ const styles = StyleSheet.create({
   textContainer: {
     flexDirection: 'column',
     marginTop: 10,
+    flex: 1,
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     justifyContent: 'center',
     alignItems: 'center',
@@ -154,7 +172,7 @@ const styles = StyleSheet.create({
   plusButtonText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#b80266',
   },
   nameListContainer: {
     marginBlock: 10,
@@ -169,16 +187,20 @@ const styles = StyleSheet.create({
   },
   dataCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
+    borderRadius: 18,
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#ddd',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dataContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+    flex: 1,
   },
   userIcon: {
     marginHorizontal: 10,
@@ -212,5 +234,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  statusUpdateButton: {
+    marginLeft: 10,
+    marginRight: 5,
   },
 });

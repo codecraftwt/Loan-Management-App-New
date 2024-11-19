@@ -34,36 +34,37 @@ const PromptBox = ({ visible, message, onConfirm, onCancel }) => {
         <View style={styles.modalContainer}>
           <Text style={styles.modalMessage}>{message}</Text>
           <View style={styles.buttonContainer}>
+
             <TouchableOpacity
               style={[
                 styles.button,
-                { backgroundColor: clicked === 'cancel' ? '#FF6B35' : '#ededed' },
-              ]}
-              onPress={() => handleButtonClick('cancel')}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: clicked === 'cancel' ? '#FFF' : '#FF6B35' },
-                ]}
-              >
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: clicked === 'confirm' ? '#FF6B35' : '#ededed' },
+                { backgroundColor: clicked === 'confirm' ? '#b80266' : '#ededed' },
               ]}
               onPress={() => handleButtonClick('confirm')}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  { color: clicked === 'confirm' ? '#FFF' : '#FF6B35' }, // Change text color based on button color
+                  { color: clicked === 'confirm' ? '#FFF' : '#b80266' }, // Change text color based on button color
                 ]}
               >
                 Confirm
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: clicked === 'cancel' ? '#b80266' : '#ededed' },
+              ]}
+              onPress={() => handleButtonClick('cancel')}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: clicked === 'cancel' ? '#FFF' : '#b80266' },
+                ]}
+              >
+                Cancel
               </Text>
             </TouchableOpacity>
           </View>
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: 300,
-    padding: 20,
+    padding: 24,
     backgroundColor: '#FFF',
     borderRadius: 10,
     alignItems: 'center',
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     headerBar: {
-        backgroundColor: '#FF6B35',
+        backgroundColor: '#b80266',
         height: 70,
         flexDirection: 'row',
         justifyContent: 'center',
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
     },
     link: {
         fontSize: 16,
-        color: '#FF6B35',
+        color: '#b80266',
         textDecorationLine: 'underline',
         marginBottom: 10,
     },
     subscribeButton: {
-        backgroundColor: '#FF6B35',
+        backgroundColor: '#b80266',
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',

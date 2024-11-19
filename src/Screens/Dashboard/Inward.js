@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getLoanByAadhar } from '../../Redux/Slices/loanSlice';
 import { useFocusEffect } from '@react-navigation/native';
+import moment from 'moment';
 import { logo } from '../../Assets';
 
 export default function Inward({ navigation }) {
@@ -21,6 +22,8 @@ export default function Inward({ navigation }) {
   const filteredLoans = loans.filter((loan) =>
     loan.purpose.toLowerCase().includes(searchQuery.toLowerCase()) // Case-insensitive search by name
   );
+
+  const formatDate = (date) => moment(date).format('DD-MM-YYYY');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -52,7 +55,7 @@ export default function Inward({ navigation }) {
       {/* List of loans */}
       {loading ? (
         <View style={styles.container}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color="#b80266" />
         </View>
       ) : (
         <>
@@ -76,20 +79,20 @@ export default function Inward({ navigation }) {
                     <View style={styles.dataContainer}>
                       <View>
                         <Icon
-                          name="user"
-                          size={30}
-                          color="#FF6B35"
+                          name="account-circle"
+                          size={35}
+                          color="#b80266"
                           style={styles.userIcon}
                         />
                       </View>
                       <View style={styles.textContainer}>
                         <Text style={styles.dataLabel}>
-                          Full Name:{' '}
-                          <Text style={styles.dataText}>{data.name}</Text>
+                          Purpose:{' '}
+                          <Text style={styles.dataText}>{data?.purpose}</Text>
                         </Text>
                         <Text style={styles.dataLabel}>
                           Loan Balance:{' '}
-                          <Text style={styles.dataText}>{data.amount}</Text> Rs
+                          <Text style={styles.dataText}>{data?.amount}</Text> Rs
                         </Text>
 
                         {/* Dynamically change the color of loan status text */}
@@ -108,6 +111,10 @@ export default function Inward({ navigation }) {
                             {data.status}
                           </Text>
                         </Text>
+                        <Text style={styles.dataLabel}>
+                          Loan End Date:{' '}
+                          <Text style={styles.dataText}>{formatDate(data?.loanEndDate)}</Text>
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -124,11 +131,10 @@ export default function Inward({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#f9f9f9',
     backgroundColor: '#f5f5f5',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     justifyContent: 'center',
     alignItems: 'center',
@@ -156,7 +162,8 @@ const styles = StyleSheet.create({
     top: 15,
   },
   totalAmountContainer: {
-    padding: 20,
+    paddingHorizontal: 18,
+    marginTop: 10,
     borderBottomColor: '#ddd',
   },
   searchBarContainer: {
@@ -174,12 +181,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   totalAmountText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#b80266',
     padding: 15,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
+    backgroundColor: 'white',
+    borderRadius: 18,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -188,7 +195,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 16,
     marginTop: 20,
   },
   emptyText: {
@@ -203,20 +210,24 @@ const styles = StyleSheet.create({
   },
   dataCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 18,
+    padding: 15,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#ddd',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dataContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+    flex: 1,
 
   },
   userIcon: {
-    marginHorizontal: 10,
+    marginHorizontal: 8,
   },
   textContainer: {
     flexDirection: 'column',
@@ -226,15 +237,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#555',
-    marginBottom: 0,
-    marginTop: 4,
+    marginBottom: 3,
+    marginLeft: 20,
 
   },
   dataText: {
     fontSize: 14,
-    fontWeight: '400',
     color: '#333',
-
   },
 
   // New Styles for Loan Status

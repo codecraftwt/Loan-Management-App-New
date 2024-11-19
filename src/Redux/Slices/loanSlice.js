@@ -94,9 +94,12 @@ export const updateLoanStatus = createAsyncThunk(
     'loans/updateLoanStatus',
     async ({ loanId, status }, { rejectWithValue }) => {
         try {
+            console.log("API call for update status", loanId)
             const response = await instance.patch(`loan/update-loan-status/${loanId}`, { status });
+            console.log(response.data)
             return response.data;
         } catch (error) {
+            console.log("Fail", error.message)
             return rejectWithValue(error.message || 'Unknown error');
         }
     }
@@ -171,12 +174,22 @@ const loanSlice = createSlice({
             })
             .addCase(updateLoanStatus.fulfilled, (state, action) => {
                 state.loading = false;
+                const updatedLoan = action.payload.loan;
                 const updatedLoanIndex = state.loans.findIndex(
-                    (loan) => loan._id === action.payload._id
+                    (loan) => loan._id === updatedLoan._id
                 );
+
                 if (updatedLoanIndex >= 0) {
-                    state.loans[updatedLoanIndex] = action.payload;
+                    state.loans[updatedLoanIndex] = updatedLoan;
                 }
+
+                const updatedLenderLoanIndex = state.lenderLoans.findIndex(
+                    (loan) => loan._id === updatedLoan._id
+                );
+                if (updatedLenderLoanIndex >= 0) {
+                    state.lenderLoans[updatedLenderLoanIndex] = updatedLoan;
+                }
+
                 state.error = null;
             })
             .addCase(updateLoanStatus.rejected, (state, action) => {

@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 28,
-    color: '#FF6B35',
+    color: '#b80266',
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
     marginBottom: 20,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   registerButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   link: {
-    color: '#FF6B35',
+    color: '#b80266',
     fontSize: 14,
     fontFamily: 'Poppins-SemiBold',
     textAlign: 'center',

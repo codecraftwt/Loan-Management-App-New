@@ -98,7 +98,7 @@ const ProfileDetails = ({ route, navigation }) => {
           <Icon
             name="user"
             size={50}
-            color="#FF6B35"
+            color="#b80266"
             style={styles.profileIcon}
           />
           <Text style={styles.detailTextName}>{profileData?.userName}</Text>
@@ -106,7 +106,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Editable Name Field */}
         <View style={styles.row}>
-          <Icon name="user" size={28} color="#FF6B35" style={styles.icon} />
+          <Icon name="user" size={28} color="#b80266" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Name</Text>
             {isEditing ? (
@@ -125,7 +125,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Editable Phone Field */}
         <View style={styles.row}>
-          <Icon name="phone" size={28} color="#FF6B35" style={styles.icon} />
+          <Icon name="phone" size={28} color="#b80266" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Phone</Text>
             {isEditing ? (
@@ -145,7 +145,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Editable Email Field */}
         <View style={styles.row}>
-          <Icon name="message-square" size={28} color="#FF6B35" style={styles.icon} />
+          <Icon name="message-square" size={28} color="#b80266" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Email</Text>
             {isEditing ? (
@@ -164,7 +164,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Non-editable Aadhaar Number */}
         <View style={styles.row}>
-          <Icon name="credit-card" size={28} color="#FF6B35" style={styles.icon} />
+          <Icon name="credit-card" size={28} color="#b80266" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Aadhar Card No</Text>
             <Text style={styles.detailText}>{profileData?.aadharCardNo}</Text>
@@ -175,7 +175,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Editable Address Field */}
         <View style={styles.row}>
-          <Icon name="map-pin" size={28} color="#FF6B35" style={styles.icon} />
+          <Icon name="map-pin" size={28} color="#b80266" style={styles.icon} />
           <View style={styles.dataContainer}>
             <Text style={styles.detailLabel}>Address</Text>
             {isEditing ? (
@@ -206,7 +206,7 @@ const ProfileDetails = ({ route, navigation }) => {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
-          <Icon name="log-out" size={28} color="#FF6B35" />
+          <Icon name="log-out" size={28} color="#b80266" />
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   editButton: {
     // marginBlock: 10,
     paddingVertical: 10,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FF6B35',
+    color: '#b80266',
     marginLeft: 18,
   },
   hrLine: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     paddingVertical: 20,
     paddingHorizontal: 25,
     borderRadius: 16,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     flexDirection: 'row',
     justifyContent: 'center',

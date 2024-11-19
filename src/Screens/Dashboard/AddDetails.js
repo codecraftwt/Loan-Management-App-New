@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     flexDirection: 'row',
     alignItems: 'center',
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   addButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   oldHistoryButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     padding: 10,
     borderRadius: 8,
     marginBottom: 20,

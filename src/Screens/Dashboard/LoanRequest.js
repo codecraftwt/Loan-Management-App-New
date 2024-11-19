@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     paddingVertical: 12,
     marginHorizontal: 40,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   result: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     alignItems: 'center',
   },

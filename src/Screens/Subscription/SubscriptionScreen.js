@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerBar: {
-        backgroundColor: '#FF6B35',
+        backgroundColor: '#b80266',
         height: 70,
         justifyContent: 'center',
         alignItems: 'center',
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     subscribeButton: {
-        backgroundColor: '#FF6B35',
+        backgroundColor: '#b80266',
         borderRadius: 8,
         paddingVertical: 14,
         alignItems: 'center',

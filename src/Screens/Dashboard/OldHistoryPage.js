@@ -33,7 +33,7 @@ const OldHistoryPage = ({ route, navigation }) => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#b80266" />
       </View>
     );
   }
@@ -61,7 +61,7 @@ const OldHistoryPage = ({ route, navigation }) => {
               <Icon
                 name="user"
                 size={50}
-                color="#FF6B35"
+                color="#b80266"
                 style={styles.profileIcon}
               />
               <Text style={styles.detailTextName}>{borrower?.name}</Text>
@@ -81,7 +81,7 @@ const OldHistoryPage = ({ route, navigation }) => {
                     style={styles.loanNameContainer}
                   >
                     <Text style={styles.loanName}>Loan Reason: {loan?.purpose} ({loan?.amount} Rs)</Text>
-                    <Icon name={expandedLoanIndex === index ? 'chevron-up' : 'chevron-down'} size={18} color="#FF6B35" />
+                    <Icon name={expandedLoanIndex === index ? 'chevron-up' : 'chevron-down'} size={18} color="#b80266" />
                   </TouchableOpacity>
 
                   {expandedLoanIndex === index && (
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     justifyContent: 'center',
     alignItems: 'center',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     alignItems: 'center',
     marginVertical: 20,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     paddingVertical: 20,
     paddingHorizontal: 25,
     borderRadius: 16,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     backgroundColor: '#FFF',
-    color: '#FF6B35',
+    color: '#b80266',
     padding: 10,
     paddingHorizontal: 18,
     margin: 5,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   totalAmountText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#b80266',
     marginBottom: 20,
     padding: 15,
     backgroundColor: '#f0f0f0',
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 6,
     marginBottom: 0,
   },

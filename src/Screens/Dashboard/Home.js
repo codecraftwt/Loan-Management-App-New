@@ -21,7 +21,7 @@ export default function Home() {
       title: "Loans Given",
       value: 15,
       icon: 'arrow-up-circle', // Icon for "Loans Given"
-      backgroundColor: '#FF6B35',
+      backgroundColor: '#b80266',
     },
     {
       title: "Loans Taken",
@@ -45,7 +45,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
+      <StatusBar barStyle="light-content" backgroundColor="#b80266" />
 
       {/* Header Section */}
       <View style={styles.headerBar}>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   headerBar: {
     height: 70,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 10,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 40,
     position: 'absolute',
-    right: 0,    
+    right: 0,
     top: 15,
   },
   statsSection: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     marginBlock: 20,
   },
   subscribeButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',

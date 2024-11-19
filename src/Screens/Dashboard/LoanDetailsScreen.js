@@ -64,7 +64,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Full Name */}
           <View style={styles.row}>
-            <Icon name="user" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="user" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Full Name</Text>
               <Text style={styles.value}>{loanDetails.name}</Text>
@@ -74,7 +74,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Contact No */}
           <View style={styles.row}>
-            <Icon name="phone" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="phone" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Contact No</Text>
               <Text style={styles.value}>{loanDetails.mobileNumber}</Text>
@@ -84,7 +84,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Aadhar No */}
           <View style={styles.row}>
-            <Icon name="credit-card" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="credit-card" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Aadhar Card No</Text>
               <Text style={styles.value}>{loanDetails.aadhaarNumber}</Text>
@@ -94,7 +94,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Loan Balance */}
           <View style={styles.row}>
-            <Icon name="dollar-sign" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="dollar-sign" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Amount</Text>
               <Text style={styles.value}>{loanDetails.amount} Rs</Text>
@@ -104,7 +104,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Loan Status */}
           <View style={styles.row}>
-            <Icon name="check-circle" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="check-circle" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Status</Text>
               <Text style={styles.value}>{loanDetails.status}</Text>
@@ -114,7 +114,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Purpose */}
           <View style={styles.row}>
-            <Icon name="book" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="book" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Purpose</Text>
               <Text style={styles.value}>{loanDetails.purpose}</Text>
@@ -124,7 +124,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Start Date */}
           <View style={styles.row}>
-            <Icon name="calendar" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="calendar" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan Start Date</Text>
               <Text style={styles.value}>{formatDate(loanDetails.loanStartDate)}</Text>
@@ -134,7 +134,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* End Date */}
           <View style={styles.row}>
-            <Icon name="calendar" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="calendar" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Loan End Date</Text>
               <Text style={styles.value}>{formatDate(loanDetails.loanEndDate)}</Text>
@@ -144,7 +144,7 @@ export default function LoanDetailScreen({ route, navigation }) {
 
           {/* Address */}
           <View style={styles.row}>
-            <Icon name="map-pin" size={28} color="#FF6B35" style={styles.icon} />
+            <Icon name="map-pin" size={28} color="#b80266" style={styles.icon} />
             <View style={styles.dataContainer}>
               <Text style={styles.label}>Address</Text>
               <Text style={styles.value}>{loanDetails.address}</Text>
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
 
   headerBar: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     height: 70,
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     alignItems: 'center',
     marginVertical: 20,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#b80266',
     paddingVertical: 20,
     paddingHorizontal: 25,
     borderRadius: 16,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   loanTitle: {
     fontSize: 22,
     fontFamily: 'Montserrat-Bold',
-    color: '#FF6B35',
+    color: '#b80266',
     marginBottom: 15,
     textAlign: 'center',
   },
