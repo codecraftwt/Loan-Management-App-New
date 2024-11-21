@@ -1,11 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../../Utils/AxiosInstance';
 
 // Thunk for user login
 export const login = createAsyncThunk(
   'auth/signin',
-  async ({ emailOrMobile, password }, { rejectWithValue }) => {
+  async ({emailOrMobile, password}, {rejectWithValue}) => {
     try {
       const response = await instance.post('auth/signin', {
         emailOrMobile,
@@ -13,8 +13,16 @@ export const login = createAsyncThunk(
       });
 
       // Destructure user data and token from the response
-      const { token, _id, email, userName, mobileNo, address, aadharCardNo, profileImage } =
-        response.data;
+      const {
+        token,
+        _id,
+        email,
+        userName,
+        mobileNo,
+        address,
+        aadharCardNo,
+        profileImage,
+      } = response.data;
 
       // If token and user info are present, save to AsyncStorage
       if (token && _id) {
@@ -28,10 +36,19 @@ export const login = createAsyncThunk(
             mobileNo,
             address,
             aadharCardNo,
-            profileImage
+            profileImage,
           }),
         );
-        return { token, _id, email, userName, mobileNo, address, aadharCardNo, profileImage };
+        return {
+          token,
+          _id,
+          email,
+          userName,
+          mobileNo,
+          address,
+          aadharCardNo,
+          profileImage,
+        };
       } else {
         return rejectWithValue('Invalid credentials'); // Handle invalid response data
       }
@@ -54,7 +71,7 @@ export const login = createAsyncThunk(
 // Thunk for user registration
 export const registerUser = createAsyncThunk(
   'auth/signup',
-  async (userData, { rejectWithValue }) => {
+  async (userData, {rejectWithValue}) => {
     try {
       const response = await instance.post('auth/signup', userData);
       console.log(response.data, 'Success');
@@ -68,25 +85,16 @@ export const registerUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'user/update-user',
-  async (userData, { rejectWithValue }) => {
+  async (userData, {rejectWithValue}) => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         return rejectWithValue('User is not authenticated');
       }
 
-      const response = await instance.patch(
-        'user/update-profile',
-        {
-          userData,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Cache-Control': 'no-cache',
-          },
-        },
-      );
+      const response = await instance.patch('user/update-profile', {
+        userData,
+      });
       console.log(response.data, 'Success');
       return response.data;
     } catch (error) {
@@ -109,26 +117,45 @@ export const updateUserProfile = createAsyncThunk(
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
+        },
       );
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
+);
+
+export const deleteProfileImage = createAsyncThunk(
+  'user/deleteProfileImage',
+  async (_, {rejectWithValue}) => {
+    try {
+      const response = await instance.delete('user/delete-profile-image');
+      return response.data;
+    } catch (error) {
+      console.error(
+        'Delete Profile Image error:',
+        error.response?.data?.message,
+      );
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'An error occurred while deleting the profile image.',
+      );
+    }
+  },
 );
 
 export const forgotPassword = createAsyncThunk(
   'auth/forgot-password',
-  async (email, { rejectWithValue }) => {
+  async (email, {rejectWithValue}) => {
     try {
-      const response = await instance.post('auth/forgot-password', { email });
+      const response = await instance.post('auth/forgot-password', {email});
       return response.data; // Success response, typically a message like "OTP sent"
     } catch (error) {
       console.error('Forgot Password error:', error);
       return rejectWithValue(
         error.response?.data?.message ||
-        'An error occurred. Please try again later.',
+          'An error occurred. Please try again later.',
       );
     }
   },
@@ -136,7 +163,7 @@ export const forgotPassword = createAsyncThunk(
 
 export const verifyOtp = createAsyncThunk(
   'auth/verify-otp',
-  async (data, { rejectWithValue }) => {
+  async (data, {rejectWithValue}) => {
     try {
       const response = await instance.post('auth/verify-otp', data);
       return response.data;
@@ -144,7 +171,7 @@ export const verifyOtp = createAsyncThunk(
       console.error('Verify OTP error:', error.response?.data?.message);
       return rejectWithValue(
         error.response?.data?.message ||
-        'An error occurred. Please try again later.',
+          'An error occurred. Please try again later.',
       );
     }
   },
@@ -153,7 +180,7 @@ export const verifyOtp = createAsyncThunk(
 // Thunk for resetting password
 export const resetPassword = createAsyncThunk(
   'auth/reset-password',
-  async ({ email, otp, newPassword }, { rejectWithValue }) => {
+  async ({email, otp, newPassword}, {rejectWithValue}) => {
     try {
       const response = await instance.post('auth/reset-password', {
         email,
@@ -165,7 +192,7 @@ export const resetPassword = createAsyncThunk(
       console.error('Reset Password error:', error);
       return rejectWithValue(
         error.response?.data?.message ||
-        'An error occurred. Please try again later.',
+          'An error occurred. Please try again later.',
       );
     }
   },
@@ -179,6 +206,7 @@ const authSlice = createSlice({
     token: null,
     error: null,
     isLoading: false,
+    isProfileLoading: false,
     forgotPasswordMessage: null, // For storing success message from forgot-password
     resetPasswordMessage: null,
   },
@@ -244,7 +272,6 @@ const authSlice = createSlice({
         if (action.payload) {
           // Update user data in the state
           state.user = action.payload.user || action.payload;
-          console.log('user 2', action.payload.user);
         } else {
           state.error = 'Failed to update profile';
         }
@@ -297,7 +324,6 @@ const authSlice = createSlice({
         if (action.payload) {
           // Update user data in the state
           state.user = action.payload.user || action.payload;
-          console.log('user profile', action.payload.user);
         } else {
           state.error = 'Failed to update profile';
         }
@@ -306,11 +332,28 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error =
           action.payload || 'Failed to update profile. Please try again later.';
+      })
+
+      .addCase(deleteProfileImage.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteProfileImage.fulfilled, (state, action) => {
+        state.isLoading = false;       
+        if (state.user) {
+          state.user.profileImage = null;
+        }
+      })
+      .addCase(deleteProfileImage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload ||
+          'Failed to delete profile image. Please try again later.';
       });
   },
 });
 
 // Export the logout action if needed
-export const { logout, setUser } = authSlice.actions;
+export const {logout, setUser} = authSlice.actions;
 
 export default authSlice.reducer;

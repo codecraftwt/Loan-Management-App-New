@@ -1,35 +1,49 @@
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import {useEffect} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setUser } from '../Slices/authslice';
+import axios from 'axios';
+import {setUser} from '../Slices/authslice';
+import {baseurl} from '../../Utils/API';
 
 const useFetchUserFromStorage = () => {
-    const dispatch = useDispatch();
-    const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch();
+  // const user = useSelector(state => state.auth.user);
 
-    useEffect(() => {
-        // Only fetch the user if it's not already in Redux
-        if (!user) {
-            const fetchUser = async () => {
-                try {
-                    const token = await AsyncStorage.getItem('token');
-                    const userData = await AsyncStorage.getItem('user');
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
 
-                    if (token && userData) {
-                        const parsedUser = JSON.parse(userData);
-                        console.log("User Deatails fetched from the storage hook");
+        if (token) {
+          // Make an API call to fetch the user data from the backend
+          const response = await axios.get(`${baseurl}user/user-data`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-                        // Dispatch the setUser action to update the Redux store
-                        dispatch(setUser(parsedUser));
-                    }
-                } catch (error) {
-                    console.error('Error fetching user from AsyncStorage:', error);
-                }
-            };
+          const userData = response.data.user;
 
-            fetchUser();
+          console.log('User Data updated');
+
+          dispatch(setUser(userData));
+
+          // Optionally, store the updated user data in AsyncStorage if you want it available locally
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+
+          console.log(
+            'User details fetched from the API and updated in Redux store',
+          );
+        } else {
+          console.log('No token found in AsyncStorage');
         }
-    }, [user, dispatch]); // Only run the effect if `user` is not available
+      } catch (error) {
+        console.error('Error fetching user from API:', error);
+      }
+    };
+
+    fetchUser();
+  }, [dispatch]);
 };
 
 export default useFetchUserFromStorage;

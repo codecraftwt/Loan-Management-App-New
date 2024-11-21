@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,22 @@ import {
   TextInput,
   Alert,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PromptBox from '../PromptBox.js/Prompt';
 import {
+  deleteProfileImage,
   logout,
   updateUser,
   updateUserProfile,
 } from '../../Redux/Slices/authslice';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
 import Toast from 'react-native-toast-message';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 
-const ProfileDetails = ({ route, navigation }) => {
+const ProfileDetails = ({route, navigation}) => {
   // const { profileData } = route.params;
 
   const dispatch = useDispatch();
@@ -30,7 +32,12 @@ const ProfileDetails = ({ route, navigation }) => {
 
   useFetchUserFromStorage();
 
+  const isLoading = useSelector(state => state.auth.loading);
+
   const [isPromptVisible, setIsPromptVisible] = useState(false);
+  const [isDeleteImagePromptVisible, setIsDeleteImagePromptVisible] =
+    useState(false);
+  const [loading, setLoading] = useState(false);
 
   // State to track if we're in edit mode
   const [isEditing, setIsEditing] = useState(false);
@@ -47,40 +54,39 @@ const ProfileDetails = ({ route, navigation }) => {
     profileData?.profileImage || null,
   );
 
-
-
   // Handle profile image change
   const handleChangeProfileImage = () => {
     Alert.alert('Change Profile Picture', 'Choose an option', [
-      { text: 'Camera', onPress: openCamera },
-      { text: 'Gallery', onPress: openGallery },
-      { text: 'Cancel', style: 'cancel' },
+      {text: 'Camera', onPress: openCamera},
+      {text: 'Gallery', onPress: openGallery},
+      {text: 'Cancel', style: 'cancel'},
     ]);
   };
 
   const openCamera = () => {
     launchCamera(
-      { mediaType: 'photo', cameraType: 'front', quality: 1, saveToPhotos: true },
+      {mediaType: 'photo', cameraType: 'front', quality: 1, saveToPhotos: true},
       response => handleImageResponse(response),
     );
   };
 
   const openGallery = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, response =>
+    launchImageLibrary({mediaType: 'photo', quality: 1}, response =>
       handleImageResponse(response),
     );
   };
 
-  const handleImageResponse = async (response) => {
+  const handleImageResponse = async response => {
     if (response.didCancel) {
       console.log('User canceled image picker');
     } else if (response.errorCode) {
       console.error(response.errorMessage);
     } else {
       try {
+        setLoading(true);
         // Get the file data from the image picker
         const fileData = response.assets[0];
-        const { uri, type, fileName } = fileData;
+        const {uri, type, fileName} = fileData;
 
         // Create FormData to send to the API
         const formData = new FormData();
@@ -94,6 +100,7 @@ const ProfileDetails = ({ route, navigation }) => {
         await dispatch(updateUserProfile(formData)) // Dispatch action to upload image
           .unwrap()
           .then(() => {
+            setLoading(false);
             Toast.show({
               type: 'success',
               position: 'top',
@@ -101,6 +108,7 @@ const ProfileDetails = ({ route, navigation }) => {
             });
           })
           .catch(error => {
+            setLoading(false);
             Toast.show({
               type: 'error',
               position: 'top',
@@ -109,6 +117,7 @@ const ProfileDetails = ({ route, navigation }) => {
           });
       } catch (error) {
         console.error('Error while handling image response:', error);
+        setLoading(false);
         Toast.show({
           type: 'error',
           position: 'top',
@@ -117,7 +126,6 @@ const ProfileDetails = ({ route, navigation }) => {
       }
     }
   };
-
 
   const handleLogout = () => {
     setIsPromptVisible(true);
@@ -162,6 +170,35 @@ const ProfileDetails = ({ route, navigation }) => {
     }
   };
 
+  // Handle profile deletion
+  const handleDeleteProfileImage = () => {
+    setIsDeleteImagePromptVisible(true);
+  };
+
+  const handleConfirmDeleteImage = async () => {
+    try {
+      await dispatch(deleteProfileImage()).unwrap();
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: 'Profile image deleted successfully',
+      });
+      setIsDeleteImagePromptVisible(false);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Failed to delete profile image',
+        text2: error?.message || 'An error occurred while deleting the image.',
+      });
+      setIsDeleteImagePromptVisible(false);
+    }
+  };
+
+  const handleCancelDeleteImage = () => {
+    setIsDeleteImagePromptVisible(false);
+  };
+
   return (
     <>
       {/* Header Bar with Back Button */}
@@ -184,18 +221,33 @@ const ProfileDetails = ({ route, navigation }) => {
           <TouchableOpacity onPress={handleChangeProfileImage}>
             <View style={styles.profileImageContainer}>
               {profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.profileImage} />
-              ) : (
-                <Icon
-                  name="user"
-                  size={50}
-                  color="#b80266"
+                <Image
+                  source={{uri: profileImage}}
+                  style={styles.profileImage}
                 />
+              ) : (
+                <Icon name="user" size={50} color="#b80266" />
               )}
             </View>
           </TouchableOpacity>
           <Text style={styles.detailTextName}>{profileData?.userName}</Text>
+
+          {/* Delete Profile Image Button */}
+          {profileData?.profileImage && (
+            <TouchableOpacity
+              style={styles.deleteImageButton}
+              onPress={handleDeleteProfileImage}>
+              <Icon name="trash" size={24} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
+
+        {isLoading ||
+          (loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#b80266" />
+            </View>
+          ))}
 
         {/* Editable Name Field */}
         <View style={styles.row}>
@@ -207,7 +259,7 @@ const ProfileDetails = ({ route, navigation }) => {
                 style={styles.input}
                 value={editedData.userName}
                 onChangeText={text =>
-                  setEditedData({ ...editedData, userName: text })
+                  setEditedData({...editedData, userName: text})
                 }
               />
             ) : (
@@ -228,7 +280,7 @@ const ProfileDetails = ({ route, navigation }) => {
                 style={styles.input}
                 value={editedData.mobileNo}
                 onChangeText={text =>
-                  setEditedData({ ...editedData, mobileNo: text })
+                  setEditedData({...editedData, mobileNo: text})
                 }
                 keyboardType="phone-pad"
               />
@@ -255,7 +307,7 @@ const ProfileDetails = ({ route, navigation }) => {
                 style={styles.input}
                 value={editedData.email}
                 onChangeText={text =>
-                  setEditedData({ ...editedData, email: text })
+                  setEditedData({...editedData, email: text})
                 }
               />
             ) : (
@@ -292,7 +344,7 @@ const ProfileDetails = ({ route, navigation }) => {
                 style={styles.input}
                 value={editedData.address}
                 onChangeText={text =>
-                  setEditedData({ ...editedData, address: text })
+                  setEditedData({...editedData, address: text})
                 }
               />
             ) : (
@@ -326,6 +378,14 @@ const ProfileDetails = ({ route, navigation }) => {
         onConfirm={handleConfirmLogout}
         onCancel={handleCancelLogout}
       />
+
+      {/* PromptBox for deleting profile image */}
+      <PromptBox
+        visible={isDeleteImagePromptVisible}
+        message="Are you sure you want to delete your profile image?"
+        onConfirm={handleConfirmDeleteImage}
+        onCancel={handleCancelDeleteImage}
+      />
     </>
   );
 };
@@ -336,6 +396,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 100,
+  },
   profileInfo: {
     alignItems: 'center',
     marginBottom: 20,
@@ -344,7 +410,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -361,6 +427,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#fff',
+    position: 'relative',
   },
   profileImage: {
     width: 100,
@@ -372,6 +439,19 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 40,
   },
+  deleteImageButton: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#b80266',
+    borderRadius: 15,
+    padding: 5,
+  },
+  detailTextName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
   editIcon: {
     position: 'absolute',
     right: 20,
@@ -379,6 +459,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
+    width: 300,
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
@@ -424,7 +505,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,

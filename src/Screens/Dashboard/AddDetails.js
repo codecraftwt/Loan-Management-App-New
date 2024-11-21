@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CountryPicker from 'react-native-country-picker-modal';
@@ -21,7 +22,7 @@ export default function AddDetails({ route, navigation }) {
 
   const dispatch = useDispatch();
 
-  const { error } = useSelector(state => state.loans);
+  const { error, loading } = useSelector(state => state.loans);
 
   // If we're editing an existing loan, load the existing loan data
   const { loanDetails } = route.params || {}; // Assuming loanDetails are passed when editing
@@ -312,8 +313,14 @@ export default function AddDetails({ route, navigation }) {
 
 
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>{loanDetails ? 'Update' : 'Add'}</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleSubmit} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {loanDetails ? 'Update' : 'Add'}
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.resetButton} onPress={resetForm}>
