@@ -29,7 +29,7 @@ export default function Home() {
   useFocusEffect(
     React.useCallback(() => {
       dispatch(getLoanStats(aadhaarNumber));
-    }, [dispatch])
+    }, [dispatch, user, loanCount])
   );
 
   // Static data for loan stats
@@ -92,7 +92,7 @@ export default function Home() {
         {/* Subscribe Section */}
         <View style={styles.content}>
           <Text style={styles.additionalInfo}>
-            Need a loan? Apply now or subscribe to give loans!
+            For our premium featurers, please subscribe to our service
           </Text>
 
           {/* Subscribe Button */}

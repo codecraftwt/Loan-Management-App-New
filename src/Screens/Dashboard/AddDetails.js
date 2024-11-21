@@ -15,6 +15,7 @@ import CountryPicker from 'react-native-country-picker-modal';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useDispatch, useSelector } from 'react-redux';
 import { createLoan, updateLoan } from '../../Redux/Slices/loanSlice';
+import Toast from 'react-native-toast-message';
 
 export default function AddDetails({ route, navigation }) {
 
@@ -99,7 +100,7 @@ export default function AddDetails({ route, navigation }) {
         if (loanDetails) {
           // If loanDetails exists, update the loan
           response = await dispatch(updateLoan({ ...newData, id: loanDetails._id }));
-          console.log("update API", loanDetails.id)
+          console.log("update API", loanDetails._id)
         } else {
           // Otherwise, create a new loan
           response = await dispatch(createLoan(newData));
@@ -107,6 +108,11 @@ export default function AddDetails({ route, navigation }) {
 
         if (createLoan.fulfilled.match(response) || updateLoan.fulfilled.match(response)) {
           console.log("Loan saved successfully");
+          Toast.show({
+            type: 'success',
+            position: 'top',
+            text1: 'Loan saved successfully',
+          });
           navigation.navigate('Outward');
         } else {
           if (response.payload && response.payload.errors) {

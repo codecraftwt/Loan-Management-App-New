@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PromptBox from '../PromptBox.js/Prompt';
@@ -15,12 +16,12 @@ import {
   updateUser,
   updateUserProfile,
 } from '../../Redux/Slices/authslice';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
 import Toast from 'react-native-toast-message';
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 
-const ProfileDetails = ({route, navigation}) => {
+const ProfileDetails = ({ route, navigation }) => {
   // const { profileData } = route.params;
 
   const dispatch = useDispatch();
@@ -46,55 +47,77 @@ const ProfileDetails = ({route, navigation}) => {
     profileData?.profileImage || null,
   );
 
+
+
   // Handle profile image change
   const handleChangeProfileImage = () => {
     Alert.alert('Change Profile Picture', 'Choose an option', [
-      {text: 'Camera', onPress: openCamera},
-      {text: 'Gallery', onPress: openGallery},
-      {text: 'Cancel', style: 'cancel'},
+      { text: 'Camera', onPress: openCamera },
+      { text: 'Gallery', onPress: openGallery },
+      { text: 'Cancel', style: 'cancel' },
     ]);
   };
 
   const openCamera = () => {
     launchCamera(
-      {mediaType: 'photo', cameraType: 'front', quality: 1, saveToPhotos: true},
+      { mediaType: 'photo', cameraType: 'front', quality: 1, saveToPhotos: true },
       response => handleImageResponse(response),
     );
   };
 
   const openGallery = () => {
-    launchImageLibrary({mediaType: 'photo', quality: 1}, response =>
+    launchImageLibrary({ mediaType: 'photo', quality: 1 }, response =>
       handleImageResponse(response),
     );
   };
 
-  const handleImageResponse = response => {
+  const handleImageResponse = async (response) => {
     if (response.didCancel) {
       console.log('User canceled image picker');
     } else if (response.errorCode) {
       console.error(response.errorMessage);
     } else {
-      const source = {uri: response.assets[0].uri};
-      setProfileImage(source);
-      const fileData = response.assets[0];
-      dispatch(updateUserProfile(fileData))
-        .unwrap()
-        .then(() => {
-          Toast.show({
-            type: 'success',
-            position: 'top',
-            text1: 'Profile Image Updated Successfully',
-          });
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'error',
-            position: 'top',
-            text1: error.message || 'Profile Update Failed',
-          });
+      try {
+        // Get the file data from the image picker
+        const fileData = response.assets[0];
+        const { uri, type, fileName } = fileData;
+
+        // Create FormData to send to the API
+        const formData = new FormData();
+        formData.append('profileImage', {
+          uri,
+          type,
+          name: fileName || 'profile_image.jpg', // Default name if none is provided
         });
+
+        // Send the image to your backend API
+        await dispatch(updateUserProfile(formData)) // Dispatch action to upload image
+          .unwrap()
+          .then(() => {
+            Toast.show({
+              type: 'success',
+              position: 'top',
+              text1: 'Profile Image Updated Successfully',
+            });
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'error',
+              position: 'top',
+              text1: error.message || 'Profile Update Failed',
+            });
+          });
+      } catch (error) {
+        console.error('Error while handling image response:', error);
+        Toast.show({
+          type: 'error',
+          position: 'top',
+          text1: 'Something went wrong while updating the profile image.',
+        });
+      }
     }
   };
+
 
   const handleLogout = () => {
     setIsPromptVisible(true);
@@ -161,13 +184,12 @@ const ProfileDetails = ({route, navigation}) => {
           <TouchableOpacity onPress={handleChangeProfileImage}>
             <View style={styles.profileImageContainer}>
               {profileImage ? (
-                <Image source={profileImage} style={styles.profileImage} />
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
               ) : (
                 <Icon
                   name="user"
                   size={50}
                   color="#b80266"
-                  // style={styles.profileIcon}
                 />
               )}
             </View>
@@ -185,7 +207,7 @@ const ProfileDetails = ({route, navigation}) => {
                 style={styles.input}
                 value={editedData.userName}
                 onChangeText={text =>
-                  setEditedData({...editedData, userName: text})
+                  setEditedData({ ...editedData, userName: text })
                 }
               />
             ) : (
@@ -206,7 +228,7 @@ const ProfileDetails = ({route, navigation}) => {
                 style={styles.input}
                 value={editedData.mobileNo}
                 onChangeText={text =>
-                  setEditedData({...editedData, mobileNo: text})
+                  setEditedData({ ...editedData, mobileNo: text })
                 }
                 keyboardType="phone-pad"
               />
@@ -233,7 +255,7 @@ const ProfileDetails = ({route, navigation}) => {
                 style={styles.input}
                 value={editedData.email}
                 onChangeText={text =>
-                  setEditedData({...editedData, email: text})
+                  setEditedData({ ...editedData, email: text })
                 }
               />
             ) : (
@@ -270,7 +292,7 @@ const ProfileDetails = ({route, navigation}) => {
                 style={styles.input}
                 value={editedData.address}
                 onChangeText={text =>
-                  setEditedData({...editedData, address: text})
+                  setEditedData({ ...editedData, address: text })
                 }
               />
             ) : (
@@ -322,7 +344,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -332,8 +354,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 50,
     overflow: 'hidden',
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -341,8 +363,8 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   profileImage: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 50,
   },
   profileIcon: {
@@ -402,7 +424,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,

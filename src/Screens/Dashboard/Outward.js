@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,16 +10,16 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useDispatch, useSelector} from 'react-redux';
-import {getLoanByLender, updateLoanStatus} from '../../Redux/Slices/loanSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { getLoanByLender, updateLoanStatus } from '../../Redux/Slices/loanSlice';
 import moment from 'moment';
-import {logo} from '../../Assets';
+import { logo } from '../../Assets';
 import PromptBox from '../PromptBox.js/Prompt';
 
-export default function Outward({navigation}) {
+export default function Outward({ navigation }) {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
-  const {lenderLoans, loading, error} = useSelector(state => state.loans);
+  const { lenderLoans, loading, error } = useSelector(state => state.loans);
   const [isPromptVisible, setIsPromptVisible] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
 
@@ -42,7 +42,7 @@ export default function Outward({navigation}) {
 
   const handleConfirm = () => {
     const newStatus = selectedLoan.status === 'pending' ? 'paid' : 'pending';
-    dispatch(updateLoanStatus({loanId: selectedLoan._id, status: newStatus}));
+    dispatch(updateLoanStatus({ loanId: selectedLoan._id, status: newStatus }));
     setIsPromptVisible(false);
   };
 
@@ -96,18 +96,18 @@ export default function Outward({navigation}) {
               }>
               <View style={styles.dataCard}>
                 <View style={styles.dataContainer}>
-                  {/* <Icon
+                  <Icon
                     name="account-circle"
-                    size={35}
+                    size={40}
                     color="#b80266"
                     style={styles.userIcon}
-                  /> */}
-                  <Image
+                  />
+                  {/* <Image
                     source={{
                       uri: 'https://img.freepik.com/free-photo/close-up-portrait-curly-handsome-european-male_176532-8133.jpg?t=st=1732015990~exp=1732019590~hmac=e9301da31fe2e3d909561780714453379b5fccda6abaf92529fbefd4afb04dcc&w=1060',
                     }}
                     style={styles.userImage}
-                  />
+                  /> */}
                   <View style={styles.textContainer}>
                     <Text style={styles.dataLabel}>
                       Full Name:{' '}
@@ -135,7 +135,7 @@ export default function Outward({navigation}) {
                     <Icon
                       name={
                         loan.status === 'pending'
-                          ? 'radio-button-unchecked'
+                          ? 'check-box-outline-blank'
                           : 'check-box'
                       }
                       size={28}
@@ -152,9 +152,8 @@ export default function Outward({navigation}) {
       {/* Prompt Box for Status Change */}
       <PromptBox
         visible={isPromptVisible}
-        message={`Are you sure you want to change the status to ${
-          selectedLoan?.status === 'pending' ? 'paid' : 'pending'
-        }?`}
+        message={`Are you sure you want to change the status to ${selectedLoan?.status === 'pending' ? 'paid' : 'pending'
+          }?`}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
@@ -210,7 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 4,

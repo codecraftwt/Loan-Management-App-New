@@ -1,11 +1,11 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../../Utils/AxiosInstance';
 
 // Thunk for user login
 export const login = createAsyncThunk(
   'auth/signin',
-  async ({emailOrMobile, password}, {rejectWithValue}) => {
+  async ({ emailOrMobile, password }, { rejectWithValue }) => {
     try {
       const response = await instance.post('auth/signin', {
         emailOrMobile,
@@ -13,7 +13,7 @@ export const login = createAsyncThunk(
       });
 
       // Destructure user data and token from the response
-      const {token, _id, email, userName, mobileNo, address, aadharCardNo} =
+      const { token, _id, email, userName, mobileNo, address, aadharCardNo, profileImage } =
         response.data;
 
       // If token and user info are present, save to AsyncStorage
@@ -28,9 +28,10 @@ export const login = createAsyncThunk(
             mobileNo,
             address,
             aadharCardNo,
+            profileImage
           }),
         );
-        return {token, _id, email, userName, mobileNo, address, aadharCardNo};
+        return { token, _id, email, userName, mobileNo, address, aadharCardNo, profileImage };
       } else {
         return rejectWithValue('Invalid credentials'); // Handle invalid response data
       }
@@ -53,7 +54,7 @@ export const login = createAsyncThunk(
 // Thunk for user registration
 export const registerUser = createAsyncThunk(
   'auth/signup',
-  async (userData, {rejectWithValue}) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const response = await instance.post('auth/signup', userData);
       console.log(response.data, 'Success');
@@ -67,7 +68,7 @@ export const registerUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'user/update-user',
-  async (userData, {rejectWithValue}) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
@@ -97,74 +98,37 @@ export const updateUser = createAsyncThunk(
   },
 );
 
-// Thunk for Update user profile
 export const updateUserProfile = createAsyncThunk(
-  'user/update-profile', // Action type
-  async (file, {rejectWithValue, getState}) => {
+  'user/updateProfile',
+  async (formData, thunkAPI) => {
     try {
-      // Dynamically extract file metadata (e.g., URI, name, and type)
-      const fileUri = file.uri;
-      const fileName = file.name || fileUri.split('/').pop(); // Use file name from the picker or URI
-      const fileExtension = fileName.split('.').pop().toLowerCase(); // Get file extension
-
-      // Determine the MIME type dynamically based on the extension
-      let mimeType = 'application/octet-stream'; // Default MIME type
-      if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
-        mimeType = 'image/jpeg';
-      } else if (fileExtension === 'png') {
-        mimeType = 'image/png';
-      } else if (fileExtension === 'gif') {
-        mimeType = 'image/gif';
-      }
-
-      // Create a FormData object to send the file
-      const formData = new FormData();
-      formData.append('file', {
-        uri: fileUri,
-        name: fileName,
-        type: mimeType,
-      });
-
-      // Get the authentication token (assumed to be in state)
-      const {token} = getState().auth; // You might need to adjust based on your state structure
-
-      // Make the API request to upload the image
       const response = await instance.post(
         'user/uploadProfileImage',
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data', // Important for file uploads
+            'Content-Type': 'multipart/form-data',
           },
-        },
+        }
       );
-
-      // Return the response data on success
       return response.data;
     } catch (error) {
-      console.error('Error uploading profile image:', error);
-
-      // Return the error message in case of failure
-      return rejectWithValue(
-        error.response?.data?.message ||
-          'An error occurred. Please try again later.', // Default fallback error message
-      );
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
-  },
+  }
 );
 
 export const forgotPassword = createAsyncThunk(
   'auth/forgot-password',
-  async (email, {rejectWithValue}) => {
+  async (email, { rejectWithValue }) => {
     try {
-      const response = await instance.post('auth/forgot-password', {email});
+      const response = await instance.post('auth/forgot-password', { email });
       return response.data; // Success response, typically a message like "OTP sent"
     } catch (error) {
       console.error('Forgot Password error:', error);
       return rejectWithValue(
         error.response?.data?.message ||
-          'An error occurred. Please try again later.',
+        'An error occurred. Please try again later.',
       );
     }
   },
@@ -172,7 +136,7 @@ export const forgotPassword = createAsyncThunk(
 
 export const verifyOtp = createAsyncThunk(
   'auth/verify-otp',
-  async (data, {rejectWithValue}) => {
+  async (data, { rejectWithValue }) => {
     try {
       const response = await instance.post('auth/verify-otp', data);
       return response.data;
@@ -180,7 +144,7 @@ export const verifyOtp = createAsyncThunk(
       console.error('Verify OTP error:', error.response?.data?.message);
       return rejectWithValue(
         error.response?.data?.message ||
-          'An error occurred. Please try again later.',
+        'An error occurred. Please try again later.',
       );
     }
   },
@@ -189,7 +153,7 @@ export const verifyOtp = createAsyncThunk(
 // Thunk for resetting password
 export const resetPassword = createAsyncThunk(
   'auth/reset-password',
-  async ({email, otp, newPassword}, {rejectWithValue}) => {
+  async ({ email, otp, newPassword }, { rejectWithValue }) => {
     try {
       const response = await instance.post('auth/reset-password', {
         email,
@@ -201,7 +165,7 @@ export const resetPassword = createAsyncThunk(
       console.error('Reset Password error:', error);
       return rejectWithValue(
         error.response?.data?.message ||
-          'An error occurred. Please try again later.',
+        'An error occurred. Please try again later.',
       );
     }
   },
@@ -347,6 +311,6 @@ const authSlice = createSlice({
 });
 
 // Export the logout action if needed
-export const {logout, setUser} = authSlice.actions;
+export const { logout, setUser } = authSlice.actions;
 
 export default authSlice.reducer;

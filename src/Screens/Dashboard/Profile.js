@@ -28,6 +28,13 @@ export default function Profile() {
 
   const aadhaarNumber = user?.aadhaarNumber || user?.aadharCardNo;
 
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true); // Set to true if the image fails to load
+  };
+
+
 
   const [isPromptVisible, setIsPromptVisible] = useState(false);
 
@@ -65,65 +72,80 @@ export default function Profile() {
           <Image source={logo} style={styles.logo} />
         </View>
 
-        {/* Profile Information */}
-        <View style={styles.profileInfo}>
-          <Icon
-            name="user"
-            size={60}
-            color="#b80266"
-            style={styles.profileIcon}
-          />
-          {/* Displaying user data*/}
-          {user ? (
-            <>
-              <Text style={styles.profileName}>{user.userName}</Text>
-              <Text style={styles.profileEmail}>{user.email}</Text>
-            </>
-          ) : (
-            <ActivityIndicator size="small" color="#b80266" />
-          )}
-        </View>
+        <ScrollView>
 
-        {/* Settings Section */}
-        <View style={styles.profileContent}>
-          <View style={styles.optionsContainer}>
-            {/* Settings Option */}
-            <TouchableOpacity
-              style={styles.option}
-              onPress={navigateToSettings}
-            >
-              <Icon name="settings" size={20} color="#333333" />
-              <Text style={styles.optionText}>Settings</Text>
-            </TouchableOpacity>
 
-            {/* Profile Option */}
-            <TouchableOpacity
-              style={styles.option}
-              onPress={navigateToProfileDetails}>
-              <Icon name="user" size={20} color="#333333" />
-              <Text style={styles.optionText}>Personal Details</Text>
-            </TouchableOpacity>
 
-            {/* Loan History Option */}
-            <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('OldHistoryPage', { aadhaarNumber }); }} >
-              <Icon name="file-text" size={20} color="#333333" />
-              <Text style={styles.optionText}>Loan History</Text>
-            </TouchableOpacity>
+          {/* Profile Information */}
+          <View style={styles.profileInfo}>
+            {imageError || !user?.profileImage ? (
+              <Icon
+                name="user"
+                size={60}
+                color="#b80266"
+                style={styles.profileIcon}
+              />
+            ) : (
+              <Image
+                source={{ uri: user?.profileImage }}
+                style={styles.profileImage}
+                onError={handleImageError} // Trigger error handler if image fails to load
+              />
+            )}
 
-            <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('HelpAndSupportScreen'); }}>
-              <Icon name="help-circle" size={20} color="#333333" />
-              <Text style={styles.optionText}>Help & Support</Text>
-            </TouchableOpacity>
+            {/* Displaying user data*/}
+            {user ? (
+              <>
+                <Text style={styles.profileName}>{user.userName}</Text>
+                <Text style={styles.profileEmail}>{user.email}</Text>
+              </>
+            ) : (
+              <ActivityIndicator size="small" color="#b80266" />
+            )}
           </View>
-        </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+          {/* Settings Section */}
+          <View style={styles.profileContent}>
+            <View style={styles.optionsContainer}>
+              {/* Settings Option */}
+              <TouchableOpacity
+                style={styles.option}
+                onPress={navigateToSettings}
+              >
+                <Icon name="settings" size={20} color="#333333" />
+                <Text style={styles.optionText}>Settings</Text>
+              </TouchableOpacity>
+
+              {/* Profile Option */}
+              <TouchableOpacity
+                style={styles.option}
+                onPress={navigateToProfileDetails}>
+                <Icon name="user" size={20} color="#333333" />
+                <Text style={styles.optionText}>Personal Details</Text>
+              </TouchableOpacity>
+
+              {/* Loan History Option */}
+              <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('OldHistoryPage', { aadhaarNumber }); }} >
+                <Icon name="file-text" size={20} color="#333333" />
+                <Text style={styles.optionText}>Loan History</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('HelpAndSupportScreen'); }}>
+                <Icon name="help-circle" size={20} color="#333333" />
+                <Text style={styles.optionText}>Help & Support</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Logout Button */}
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
+
 
       {/* Logout Confirmation Prompt */}
       <PromptBox
@@ -170,6 +192,13 @@ const styles = StyleSheet.create({
     right: 0,
     top: 15,
   },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderColor: '#dbd9d9',
+    borderWidth: 1,
+  },
   profileContent: {
     flexGrow: 1,
     paddingBottom: 20,
@@ -179,9 +208,11 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   profileIcon: {
-    backgroundColor: '#FFA36C',
-    padding: 15,
+    backgroundColor: '#f0f0f0',
+    padding: 20,
     borderRadius: 40,
+    borderColor: '#f5f5f5',
+    borderWidth: 2,
   },
   profileName: {
     fontSize: 24,
@@ -210,14 +241,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
     color: '#333333',
-    marginLeft: 10,
+    marginLeft: 20,
   },
   logoutButton: {
     backgroundColor: '#b80266',
     borderRadius: 8,
     paddingVertical: 12,
     marginHorizontal: 40,
-    marginBlock: 20,
+    marginBottom: 20,
     alignItems: 'center',
     width: '60%',
     alignSelf: 'center',

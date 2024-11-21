@@ -20,7 +20,7 @@ export default function Inward({ navigation }) {
 
   // Filtered loans based on search query
   const filteredLoans = loans.filter((loan) =>
-    loan.purpose.toLowerCase().includes(searchQuery.toLowerCase()) // Case-insensitive search by name
+    loan?.purpose?.toLowerCase().includes(searchQuery.toLowerCase()) // Case-insensitive search by name
   );
 
   const formatDate = (date) => moment(date).format('DD-MM-YYYY');
@@ -78,12 +78,19 @@ export default function Inward({ navigation }) {
                   <View style={styles.dataCard}>
                     <View style={styles.dataContainer}>
                       <View>
-                        <Icon
-                          name="account-circle"
-                          size={35}
-                          color="#b80266"
-                          style={styles.userIcon}
-                        />
+                        {
+                          user?.profileImage ? (
+                            <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+                          ) : (
+                            <Icon
+                              name="account-circle"
+                              size={40}
+                              color="#b80266"
+                              style={styles.userIcon}
+                            />
+                          )
+                        }
+
                       </View>
                       <View style={styles.textContainer}>
                         <Text style={styles.dataLabel}>
@@ -164,6 +171,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 15,
+  },
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 60,
   },
   totalAmountContainer: {
     paddingHorizontal: 18,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, ScrollView, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useDispatch, useSelector } from 'react-redux';
 import { getLoanByAadhar } from '../../Redux/Slices/loanSlice';
@@ -40,6 +40,8 @@ const OldHistoryPage = ({ route, navigation }) => {
 
   const borrower = loans && loans[0];
 
+  console.log(borrower, "borrower deatils")
+
   return (
     <>
       <View style={styles.headerBar}>
@@ -60,12 +62,22 @@ const OldHistoryPage = ({ route, navigation }) => {
           ) : (
             <View style={styles.container}>
               <View style={styles.profileInfo}>
-                <Icon
-                  name="user"
-                  size={50}
-                  color="#b80266"
-                  style={styles.profileIcon}
-                />
+                {
+                  borrower?.userProfileImage ? (
+                    <Image
+                      source={{ uri: borrower?.userProfileImage }}
+                      style={styles.profileImage}
+                    />
+                  ) : (
+                    <Icon
+                      name="user"
+                      size={50}
+                      color="#b80266"
+                      style={styles.profileIcon}
+                    />
+                  )
+                }
+
                 <Text style={styles.detailTextName}>{borrower?.name}</Text>
                 <Text style={styles.aadharHeading}>Aadhar No: {aadharNo || borrower?.aadhaarNumber}</Text>
                 <Text style={styles.detailText}>Mobile: {borrower?.mobileNumber}</Text>
@@ -169,6 +181,14 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 40,
     marginBottom: 10,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderColor: '#dbd9d9',
+    borderWidth: 1,
+    marginBottom: 5
   },
   aadharHeading: {
     fontSize: 18,
