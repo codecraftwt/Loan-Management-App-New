@@ -50,10 +50,6 @@ const ProfileDetails = ({route, navigation}) => {
     address: profileData?.address,
   });
 
-  const [profileImage, setProfileImage] = useState(
-    profileData?.profileImage || null,
-  );
-
   // Handle profile image change
   const handleChangeProfileImage = () => {
     Alert.alert('Change Profile Picture', 'Choose an option', [
@@ -220,9 +216,9 @@ const ProfileDetails = ({route, navigation}) => {
           {/* Profile Image */}
           <TouchableOpacity onPress={handleChangeProfileImage}>
             <View style={styles.profileImageContainer}>
-              {profileImage ? (
+              {profileData?.profileImage ? (
                 <Image
-                  source={{uri: profileImage}}
+                  source={{uri: profileData.profileImage}}
                   style={styles.profileImage}
                 />
               ) : (

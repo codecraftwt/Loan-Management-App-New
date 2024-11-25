@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   TextInput,
@@ -13,27 +13,34 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CountryPicker from 'react-native-country-picker-modal';
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { useDispatch, useSelector } from 'react-redux';
-import { createLoan, updateLoan } from '../../Redux/Slices/loanSlice';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  createLoan,
+  getLoanByAadhar,
+  updateLoan,
+} from '../../Redux/Slices/loanSlice';
 import Toast from 'react-native-toast-message';
 
-export default function AddDetails({ route, navigation }) {
-
+export default function AddDetails({route, navigation}) {
   const dispatch = useDispatch();
 
-  const { error, loading } = useSelector(state => state.loans);
+  const {loans, error, loading} = useSelector(state => state.loans);
 
   // If we're editing an existing loan, load the existing loan data
-  const { loanDetails } = route.params || {}; // Assuming loanDetails are passed when editing
+  const {loanDetails} = route.params || {}; // Assuming loanDetails are passed when editing
 
   const [fullName, setFullName] = useState(loanDetails?.name || '');
   const [contactNo, setContactNo] = useState(loanDetails?.mobileNumber || '');
   const [aadharNo, setAadharNo] = useState(loanDetails?.aadhaarNumber || '');
   const [address, setAddress] = useState(loanDetails?.address || '');
   const [amount, setAmount] = useState(loanDetails?.amount.toString() || '');
-  const [loanStartDate, setLoanStartDate] = useState(loanDetails?.loanStartDate || null);
-  const [loanEndDate, setLoanEndDate] = useState(loanDetails?.loanEndDate || null);
+  const [loanStartDate, setLoanStartDate] = useState(
+    loanDetails?.loanStartDate || null,
+  );
+  const [loanEndDate, setLoanEndDate] = useState(
+    loanDetails?.loanEndDate || null,
+  );
   const [purpose, setPurpose] = useState(loanDetails?.purpose || '');
   const [errorMessage, setErrorMessage] = useState('');
   const [showOldHistoryButton, setShowOldHistoryButton] = useState(false);
@@ -43,13 +50,20 @@ export default function AddDetails({ route, navigation }) {
   const [isStartDatePickerVisible, setStartDatePickerVisible] = useState(false);
   const [isEndDatePickerVisible, setEndDatePickerVisible] = useState(false);
 
-  const [apiErrors, setApiErrors] = useState([]);  // State to store API error messages
+  const [profileImage, setProfileImage] = useState('');
+
+  const [apiErrors, setApiErrors] = useState([]); // State to store API error messages
 
   // Get today's date (current date) for min date validation
   const today = new Date();
   const todayString = today.toISOString().split('T')[0]; // 'yyyy-mm-dd' format for date picker
 
-  console.log("Loan data for editing: ", loanDetails);
+  // console.log('Loan data for editing: ', loanDetails);
+
+  useEffect(() => {
+    const userProfileImage = loans[0]?.userProfileImage;
+    setProfileImage(userProfileImage);
+  }, [loans, aadharNo]);
 
   // Function to validate form fields
   const validateForm = () => {
@@ -92,6 +106,7 @@ export default function AddDetails({ route, navigation }) {
         loanStartDate,
         loanEndDate,
         purpose,
+        profileImage,
       };
 
       // console.log("Form data: ", newData);
@@ -100,15 +115,20 @@ export default function AddDetails({ route, navigation }) {
         let response;
         if (loanDetails) {
           // If loanDetails exists, update the loan
-          response = await dispatch(updateLoan({ ...newData, id: loanDetails._id }));
-          console.log("update API", loanDetails._id)
+          response = await dispatch(
+            updateLoan({...newData, id: loanDetails._id}),
+          );
+          console.log('update API', loanDetails._id);
         } else {
           // Otherwise, create a new loan
           response = await dispatch(createLoan(newData));
         }
 
-        if (createLoan.fulfilled.match(response) || updateLoan.fulfilled.match(response)) {
-          console.log("Loan saved successfully");
+        if (
+          createLoan.fulfilled.match(response) ||
+          updateLoan.fulfilled.match(response)
+        ) {
+          console.log('Loan saved successfully');
           Toast.show({
             type: 'success',
             position: 'top',
@@ -117,7 +137,7 @@ export default function AddDetails({ route, navigation }) {
           navigation.navigate('Outward');
         } else {
           if (response.payload && response.payload.errors) {
-            setErrorMessage(response.payload.errors.join(', '));  // Set the errors from the API response
+            setErrorMessage(response.payload.errors.join(', ')); // Set the errors from the API response
           }
         }
       } catch (error) {
@@ -146,9 +166,13 @@ export default function AddDetails({ route, navigation }) {
   };
 
   const handleAadharChange = text => {
-    if (/^\d{0,12}$/.test(text)) {
-      setAadharNo(text);
-      setShowOldHistoryButton(text.length === 12);
+    const isValidAadhar = /^\d{0,12}$/.test(text);
+    if (!isValidAadhar) return;
+    setAadharNo(text);
+    setShowOldHistoryButton(text.length === 12);
+
+    if (text?.length === 12) {
+      dispatch(getLoanByAadhar(text));
     }
   };
 
@@ -160,13 +184,13 @@ export default function AddDetails({ route, navigation }) {
   };
 
   // Handle the loan start date change
-  const handleLoanStartDateChange = (date) => {
+  const handleLoanStartDateChange = date => {
     setLoanStartDate(date);
     setStartDatePickerVisible(false);
   };
 
   // Handle the loan end date change
-  const handleLoanEndDateChange = (date) => {
+  const handleLoanEndDateChange = date => {
     setLoanEndDate(date);
     setEndDatePickerVisible(false);
   };
@@ -182,10 +206,14 @@ export default function AddDetails({ route, navigation }) {
           onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>{loanDetails ? 'Edit Loan Details' : 'Add Loan Details'}</Text>
+        <Text style={styles.headerText}>
+          {loanDetails ? 'Edit Loan Details' : 'Add Loan Details'}
+        </Text>
       </View>
       <ScrollView style={styles.scrollViewContainer}>
-        <Text style={styles.msgText}>Fill the below form to {loanDetails ? 'update' : 'add'} loan</Text>
+        <Text style={styles.msgText}>
+          Fill the below form to {loanDetails ? 'update' : 'add'} loan
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Full Name"
@@ -233,7 +261,7 @@ export default function AddDetails({ route, navigation }) {
         {showOldHistoryButton && (
           <TouchableOpacity
             style={styles.oldHistoryButton}
-            onPress={() => navigation.navigate('OldHistoryPage', { aadharNo })}>
+            onPress={() => navigation.navigate('OldHistoryPage', {aadharNo})}>
             <Text style={styles.oldHistoryButtonText}>Old History</Text>
           </TouchableOpacity>
         )}
@@ -265,7 +293,9 @@ export default function AddDetails({ route, navigation }) {
           <TextInput
             style={styles.input}
             placeholder="Loan Start Date"
-            value={loanStartDate ? new Date(loanStartDate).toLocaleDateString() : ''}
+            value={
+              loanStartDate ? new Date(loanStartDate).toLocaleDateString() : ''
+            }
             editable={false}
           />
         </TouchableOpacity>
@@ -282,7 +312,9 @@ export default function AddDetails({ route, navigation }) {
           <TextInput
             style={styles.input}
             placeholder="Loan End Date"
-            value={loanEndDate ? new Date(loanEndDate).toLocaleDateString() : ''}
+            value={
+              loanEndDate ? new Date(loanEndDate).toLocaleDateString() : ''
+            }
             editable={false}
           />
         </TouchableOpacity>
@@ -311,9 +343,11 @@ export default function AddDetails({ route, navigation }) {
           </Text>
         )}
 
-
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleSubmit} disabled={loading}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleSubmit}
+            disabled={loading}>
             {loading ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (

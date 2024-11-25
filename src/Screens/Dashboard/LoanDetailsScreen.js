@@ -34,6 +34,18 @@ export default function LoanDetailScreen({route, navigation}) {
     navigation.navigate('AddDetails', {loanDetails}); // Navigate to Edit Screen
   };
 
+  const getStatusStyle = status => {
+    switch (status) {
+      case 'accepted':
+        return styles.acceptedStatus;
+      case 'rejected':
+        return styles.rejectedStatus;
+      case 'pending':
+      default:
+        return styles.pendingStatus;
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header Bar */}
@@ -65,6 +77,16 @@ export default function LoanDetailScreen({route, navigation}) {
               defaultProfileIcon // Default profile icon when no image is found
             )}
             <Text style={styles.name}>{loanDetails.name}</Text>
+          </View>
+
+          <View>
+            <Text
+              style={[
+                styles.loanAcceptanceStatus,
+                getStatusStyle(loanDetails.borrowerAcceptanceStatus),
+              ]}>
+              Loan acceptance status: {loanDetails.borrowerAcceptanceStatus}
+            </Text>
           </View>
 
           {/* Full Name */}
@@ -246,9 +268,41 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 
+  loanAcceptanceStatus: {
+    fontSize: 13,
+    fontFamily: 'Poppins-Bold',
+    marginBottom: 20,
+    padding: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    textAlign: 'center',
+    letterSpacing: 1.5,
+  },
+
+  // Conditional status styles:
+  acceptedStatus: {
+    backgroundColor: '#28a745',
+    color: 'white',
+  },
+
+  rejectedStatus: {
+    backgroundColor: '#dc3545',
+    color: 'white',
+  },
+
+  pendingStatus: {
+    backgroundColor: '#ffc107',
+    color: 'white',
+  },
+
   profileInfo: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginTop: 10,
+    marginBottom: 20,
     backgroundColor: '#b80266',
     paddingVertical: 20,
     paddingHorizontal: 25,
