@@ -8,6 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
   Image,
+  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useDispatch, useSelector} from 'react-redux';
@@ -23,6 +24,7 @@ export default function Outward({navigation}) {
   const {lenderLoans, loading, error} = useSelector(state => state.loans);
   const [isPromptVisible, setIsPromptVisible] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
 
   useEffect(() => {
     dispatch(getLoanByLender());
@@ -71,6 +73,13 @@ export default function Outward({navigation}) {
     setIsPromptVisible(false);
   };
 
+  // Pull-to-refresh logic
+  const onRefresh = async () => {
+    // setRefreshing(true);
+    await dispatch(getLoanByLender());
+    // setRefreshing(false);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerBar}>
@@ -101,7 +110,14 @@ export default function Outward({navigation}) {
       )}
 
       {/* Loan List */}
-      <ScrollView style={styles.nameListContainer}>
+      <ScrollView
+        style={styles.nameListContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing} // Pass the refreshing state
+            onRefresh={onRefresh} // Call onRefresh function when pull-to-refresh happens
+          />
+        }>
         {loading === false && filteredLoans?.length === 0 ? (
           <Text style={styles.emptyText}>No loans found</Text>
         ) : (

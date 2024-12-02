@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  RefreshControl,
 } from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather'; // Importing Feather icons for buttons
@@ -21,6 +22,8 @@ export default function Home() {
 
   const user = useSelector(state => state.auth.user);
   const loanCount = useSelector(state => state.loans.loanStats);
+
+  const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
 
   useFetchUserFromStorage();
 
@@ -60,6 +63,13 @@ export default function Home() {
     },
   ];
 
+  // Pull-to-refresh function
+  const onRefresh = async () => {
+    setRefreshing(true); // Set refreshing to true
+    await dispatch(getLoanStats(aadhaarNumber)); // Fetch the loan stats again
+    setRefreshing(false); // Set refreshing to false after fetching
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#b80266" />
@@ -70,7 +80,15 @@ export default function Home() {
         <Image source={logo} style={styles.logo} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.cardsContainer}>
+      {/* ScrollView with RefreshControl */}
+      <ScrollView
+        contentContainerStyle={styles.cardsContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing} // Pass the refreshing state
+            onRefresh={onRefresh} // Call onRefresh function when pull-to-refresh happens
+          />
+        }>
         {/* Main Stats Section */}
         <View style={styles.statsSection}>
           <Text style={styles.welcomeText}>Welcome to the Loan App</Text>
@@ -95,7 +113,7 @@ export default function Home() {
         {/* Subscribe Section */}
         <View style={styles.content}>
           <Text style={styles.additionalInfo}>
-            For our premium featurers, please subscribe to our service
+            For our premium features, please subscribe to our service
           </Text>
 
           {/* Subscribe Button */}

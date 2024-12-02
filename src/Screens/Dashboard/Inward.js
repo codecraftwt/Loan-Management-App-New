@@ -7,6 +7,7 @@ import {
   TextInput,
   ActivityIndicator,
   Image,
+  RefreshControl,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -33,6 +34,7 @@ export default function Inward({navigation}) {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [acceptanceStatus, setAcceptanceStatus] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filtered loans based on search query
   const filteredLoans = loans.filter(loan =>
@@ -85,6 +87,13 @@ export default function Inward({navigation}) {
     setIsPromptVisible(false);
   };
 
+  // Pull-to-refresh logic
+  const onRefresh = async () => {
+    // setRefreshing(true);
+    await dispatch(getLoanByAadhar(aadhaarNumber));
+    // setRefreshing(false);
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       if (aadhaarNumber) {
@@ -124,7 +133,14 @@ export default function Inward({navigation}) {
             </Text>
           </View>
 
-          <ScrollView style={styles.nameListContainer}>
+          <ScrollView
+            style={styles.nameListContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing} // Pass the refreshing state
+                onRefresh={onRefresh} // Call onRefresh function when pull-to-refresh happens
+              />
+            }>
             {filteredLoans.length === 0 ? (
               <Text style={styles.emptyText}>No loans found</Text>
             ) : (
