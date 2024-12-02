@@ -15,6 +15,7 @@ import PromptBox from '../PromptBox.js/Prompt';
 import {
   deleteProfileImage,
   logout,
+  removeUserDeviceToken,
   updateUser,
   updateUserProfile,
 } from '../../Redux/Slices/authslice';
@@ -127,12 +128,19 @@ const ProfileDetails = ({route, navigation}) => {
     setIsPromptVisible(true);
   };
 
-  const handleConfirmLogout = () => {
-    dispatch(logout());
-    setTimeout(() => {
-      setIsPromptVisible(false);
-      navigation.replace('Login');
-    }, 200);
+  const handleConfirmLogout = async () => {
+    try {
+      await dispatch(removeUserDeviceToken({}));
+
+      dispatch(logout());
+
+      setTimeout(() => {
+        setIsPromptVisible(false);
+        navigation.replace('Login');
+      }, 200);
+    } catch (error) {
+      console.error('Error during logout process:', error);
+    }
   };
 
   const handleCancelLogout = () => {

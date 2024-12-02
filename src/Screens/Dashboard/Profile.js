@@ -7,15 +7,14 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
 import PromptBox from '../PromptBox.js/Prompt';
-import { logout } from '../../Redux/Slices/authslice';
+import {logout, removeUserDeviceToken} from '../../Redux/Slices/authslice';
 import useFetchUserFromStorage from '../../Redux/hooks/useFetchUserFromStorage';
-import { logo } from '../../Assets';
-
+import {logo} from '../../Assets';
 
 export default function Profile() {
   const navigation = useNavigation();
@@ -34,12 +33,10 @@ export default function Profile() {
     setImageError(true); // Set to true if the image fails to load
   };
 
-
-
   const [isPromptVisible, setIsPromptVisible] = useState(false);
 
   const navigateToProfileDetails = () => {
-    navigation.navigate('ProfileDetails', { profileData: user });
+    navigation.navigate('ProfileDetails', {profileData: user});
   };
 
   const navigateToSettings = () => {
@@ -50,12 +47,19 @@ export default function Profile() {
     setIsPromptVisible(true);
   };
 
-  const handleConfirmLogout = () => {
-    dispatch(logout());
-    setTimeout(() => {
-      setIsPromptVisible(false);
-      navigation.replace('Login');
-    }, 200);
+  const handleConfirmLogout = async () => {
+    try {
+      await dispatch(removeUserDeviceToken({}));
+
+      dispatch(logout());
+
+      setTimeout(() => {
+        setIsPromptVisible(false);
+        navigation.replace('Login');
+      }, 200);
+    } catch (error) {
+      console.error('Error during logout process:', error);
+    }
   };
 
   const handleCancelLogout = () => {
@@ -73,9 +77,6 @@ export default function Profile() {
         </View>
 
         <ScrollView>
-
-
-
           {/* Profile Information */}
           <View style={styles.profileInfo}>
             {imageError || !user?.profileImage ? (
@@ -87,7 +88,7 @@ export default function Profile() {
               />
             ) : (
               <Image
-                source={{ uri: user?.profileImage }}
+                source={{uri: user?.profileImage}}
                 style={styles.profileImage}
                 onError={handleImageError} // Trigger error handler if image fails to load
               />
@@ -110,8 +111,7 @@ export default function Profile() {
               {/* Settings Option */}
               <TouchableOpacity
                 style={styles.option}
-                onPress={navigateToSettings}
-              >
+                onPress={navigateToSettings}>
                 <Icon name="settings" size={20} color="#333333" />
                 <Text style={styles.optionText}>Settings</Text>
               </TouchableOpacity>
@@ -125,12 +125,25 @@ export default function Profile() {
               </TouchableOpacity>
 
               {/* Loan History Option */}
-              <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('OldHistoryPage', { aadhaarNumber }); }} >
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => {
+                  navigation.navigate('OldHistoryPage', {aadhaarNumber});
+                }}>
                 <Icon name="file-text" size={20} color="#333333" />
                 <Text style={styles.optionText}>Loan History</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.option} onPress={() => { navigation.navigate('HelpAndSupportScreen'); }}>
+              <TouchableOpacity style={styles.option}>
+                <Icon name="bell" size={20} color="#333333" />
+                <Text style={styles.optionText}>Notifications</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => {
+                  navigation.navigate('HelpAndSupportScreen');
+                }}>
                 <Icon name="help-circle" size={20} color="#333333" />
                 <Text style={styles.optionText}>Help & Support</Text>
               </TouchableOpacity>
@@ -138,14 +151,11 @@ export default function Profile() {
           </View>
 
           {/* Logout Button */}
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
-
 
       {/* Logout Confirmation Prompt */}
       <PromptBox

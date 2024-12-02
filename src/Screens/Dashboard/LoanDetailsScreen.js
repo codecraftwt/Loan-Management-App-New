@@ -324,9 +324,11 @@ const styles = StyleSheet.create({
   },
 
   profileIcon: {
-    backgroundColor: '#FFA36C',
+    backgroundColor: '#f0f0f0',
     padding: 15,
     borderRadius: 40,
+    borderColor: '#f5f5f5',
+    color: '#b80266',
     marginBottom: 10,
   },
 

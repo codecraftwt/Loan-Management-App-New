@@ -1,6 +1,35 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../../Utils/AxiosInstance';
+import messaging from '@react-native-firebase/messaging';
+
+// Function to register the device token after login or signup
+const registerDeviceToken = async userId => {
+  try {
+    // Get the device token from Firebase Cloud Messaging
+    const deviceToken = await messaging().getToken();
+
+    if (deviceToken) {
+      // Send the device token to the backend API
+      await instance.post('user/register-device-token', {userId, deviceToken});
+    }
+  } catch (error) {
+    console.error('Error registering device token:', error);
+  }
+};
+
+// Function to remove device token
+const removeDeviceToken = async () => {
+  try {
+    const deviceToken = await messaging().getToken();
+    if (deviceToken) {
+      // Send the request to the backend to remove the device token
+      await instance.post('user/remove-device-token', {deviceToken});
+    }
+  } catch (error) {
+    console.error('Error removing device token:', error);
+  }
+};
 
 // Thunk for user login
 export const login = createAsyncThunk(
@@ -39,6 +68,9 @@ export const login = createAsyncThunk(
             profileImage,
           }),
         );
+
+        await registerDeviceToken(_id);
+
         return {
           token,
           _id,
@@ -74,6 +106,13 @@ export const registerUser = createAsyncThunk(
   async (userData, {rejectWithValue}) => {
     try {
       const response = await instance.post('auth/signup', userData);
+
+      // Get the user ID from the response
+      const {_id} = response.data.user;
+
+      // Register the device token after user registration
+      await registerDeviceToken(_id);
+
       console.log(response.data, 'Success');
       return response.data;
     } catch (error) {
@@ -193,6 +232,22 @@ export const resetPassword = createAsyncThunk(
       return rejectWithValue(
         error.response?.data?.message ||
           'An error occurred. Please try again later.',
+      );
+    }
+  },
+);
+
+export const removeUserDeviceToken = createAsyncThunk(
+  'auth/remove-device-token',
+  async ({rejectWithValue}) => {
+    try {
+      // Remove the device token from the backend
+      await removeDeviceToken();
+      return {message: 'Device token removed successfully'};
+    } catch (error) {
+      console.error('Remove device token error:', error);
+      return rejectWithValue(
+        'Error removing device token. Please try again later.',
       );
     }
   },
@@ -339,7 +394,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteProfileImage.fulfilled, (state, action) => {
-        state.isLoading = false;       
+        state.isLoading = false;
         if (state.user) {
           state.user.profileImage = null;
         }
